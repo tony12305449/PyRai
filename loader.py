@@ -4,7 +4,7 @@ import telnetlib, sys, os, http.server, socketserver
 # modules
 from libs import truecolors
 
-__bin__ = "http://lololol:31338/bin/c34.py"
+__bin__ = ""
 __webp_ = "31338"
 
 
