@@ -48,7 +48,6 @@ class ClientThread(Thread):
             self.conn.send("200".encode('ascii'))
         
 
-
 mkdir(os.path.dirname(os.path.realpath(__file__))+r"\dump")
 TCP_IP = '0.0.0.0' 
 TCP_PORT = int(__PORT__)  
