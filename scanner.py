@@ -210,7 +210,7 @@ def is_ssh_open(ip):
             retry_two_times=True
             return is_ssh_open(ip)
         else:
-            print(f"[Scanner] Found combo:\n\tHOSTNAME: {ip}\n\tUSERNAME: {username}\n\tPASSWORD: {password}{RESET}")
+            print(f"[Scanner] Found combo:\n\tHOSTNAME: {ip}\n\tUSERNAME: {username}\n\tPASSWORD: {password}")
             return True
 
 
@@ -257,15 +257,15 @@ def Scanner(choose):
     else:
         print("Try to scan Telnet ---------------")
         is_telent_open("192.168.1.167")
-        print("Try to scan Telnet ---------------")
+        print("Try to scan SSH ---------------")
         is_ssh_open("192.168.1.167")
 
 
 
 if __name__ == '__main__':
     print("[Scanner] Scanner process started ..")
-    validateC2()
-    Scanner()
+    validateC2() # Test to connect remote DB
+    Scanner(2)
 
 
 '''
