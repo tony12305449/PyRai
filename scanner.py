@@ -131,7 +131,7 @@ def bruteport(ip, port):    #try 23 & 2323
             while True:
                 response = tn.read_until(b":", 1)                           # Wait until you can see: Appears to indicate that you can try to log in
                 # print("Response: " + str(response))
-                if "Login:" in str(response) or "Username:" in str(response):  # if login or username exist in response
+                if "Login:" in str(response) or "Username:" in str(response)or "login:" in str(response):  # if login or username exist in response
                     print("[Scanner] Received username prompt")
                     need_user = True                                        # If retrying to log in requires entering an account  then set True
                     asked_password_in_cnx = False                           # Did you ask for a password ?

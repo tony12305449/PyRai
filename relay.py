@@ -4,8 +4,6 @@ from datetime import datetime
 from threading import Thread
 from socketserver import ThreadingMixIn
 from colorama import Fore, Back, Style, init
-
-# modules
 from libs import truecolors
 
 relay_ps = "||"
