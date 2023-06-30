@@ -3,7 +3,7 @@ import sys
 import os
 import json
 from libs import truecolors
-
+import paramiko
 Host_IP = ""
 
 def read_config_ip():
@@ -59,10 +59,23 @@ def doTelnetLogin(ip, port, user, pass_):
 
 def doSSHLogin(ip, port, user, pass_):
 
-    
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        client.connect(ip, port=port, username=user, password=pass_)
+        command="cd /tmp ; ls"
+        stdin, stdout, stderr = client.exec_command(command)
+        output = stdout.read().decode('utf-8')
+        print(output)
+    except paramiko.AuthenticationException:
+        print("Authentication failed.")
+    except paramiko.SSHException as e:
+        print("SSH connection error: " + str(e))
+    except paramiko.Exception as e:
+        print("Error: " + str(e))
+    finally:
+        client.close()
 
-
-    pass
 
 def ForceDB(fname):
     try:
@@ -88,5 +101,6 @@ def ForceDB(fname):
 if __name__ == '__main__':
     Host_IP, targerIP = read_config_ip()
     #ForceDB(sys.argv[2])
-    doTelnetLogin("192.168.1.167", "23", "admin", "password")
+    #doTelnetLogin("192.168.1.167", "23", "admin", "password")
+    doSSHLogin("192.168.1.167","22","admin","password")
     
