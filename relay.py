@@ -49,7 +49,7 @@ class ClientThread(Thread):
         elif data == "#":                           # 如果接收到來自scanner的測試連線 (#)
             truecolors.print_info(
                 "Received remote scanner ping (%s:%s) .." % (self.ip, str(self.port)))
-            self.conn.send("200".encode('ascii'))
+            self.conn.send("200".encode('ascii'))  #回應200確定連線成功
 
 
 TCP_IP = '0.0.0.0'
