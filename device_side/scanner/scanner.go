@@ -12,8 +12,8 @@ import (
 
 var (
 	MAlist = [][]string{
-        {"root", "password"},
 		{"admin", "password"},
+		{"root", "password"},
 		{"admin", "admin"},
 		{"root", "admin"},
         {"root", "888888"},
@@ -339,7 +339,7 @@ func intToString(num int) string {
 func main() {
 	fmt.Println("[Scanner] Scanner process started ..")
 	//isSSHOpen("192.168.1.163")
-	isTelnetOpen("192.168.1.121","23")
+	isTelnetOpen("192.168.1.163","23")
 	
 	//Scanner() //若移植到裝置上掃描全域
 

@@ -1,1 +1,2 @@
-admin:password:192.168.1.2:23
+root:password:192.168.1.121:23
+admin:password:192.168.1.163:23
