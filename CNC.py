@@ -3,7 +3,7 @@ import threading
 import json
 # 共享的資源，用於存儲指令
 command_to_clients = ""
-
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 def handle_client(client_socket):
     global command_to_clients
 
@@ -27,9 +27,10 @@ def read_config_ip():
 def start_server():
     Host_IP, targerIP = read_config_ip() #target IP not use
     host = Host_IP
+    #host="192.168.206.136"
     port = 12345
 
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
     server_socket.bind((host, port))
     server_socket.listen(100)
 
@@ -42,7 +43,7 @@ def start_server():
         client_handler = threading.Thread(target=handle_client, args=(client_socket,))
         client_handler.start()
 
-    server_socket.close()
+
 
 def send_command_to_clients():
     global command_to_clients
@@ -64,5 +65,5 @@ if __name__ == "__main__":
 
     client_thread.join()
     command_thread.join()
-
+    server_socket.close()
     print("C&C Server stopped.")
