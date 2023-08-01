@@ -7,7 +7,7 @@ from colorama import Fore, Back, Style, init
 from libs import truecolors
 
 relay_ps = "||"
-__MAXCONN__ = 1000
+__MAXCONN__ = 100
 __PORT__ = 31337 #48101
 
 
@@ -36,7 +36,7 @@ class ClientThread(Thread):
                 try:
                     usr, psw, ip, port = data.split(relay_ps)[1], data.split(relay_ps)[2], data.split(relay_ps)[3], data.split(relay_ps)[4]
                     if ip in open("csdb.txt").read():
-                        truecolors.print_errn(f"Ip: {ip} already broken, continuing ..." )
+                        truecolors.print_errn(f"IP: {ip} already broken, continuing ..." )
                         self.conn.send("40".encode('ascii'))
                         break
                     else:

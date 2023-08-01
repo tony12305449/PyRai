@@ -6,7 +6,7 @@ from libs import truecolors
 
 __webp_ = "31338"           # bin server port
 __file__ = "./ELF_file/"      # bin server port
-Host_IP = ""
+Host_IP = ""#"192.168.206.136"
 
 
 def read_config_ip():
