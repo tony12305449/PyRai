@@ -15,7 +15,7 @@ def start_client():
         if command:
             print("Received command:", command)
 
-            # 在這裡你可以根據收到的指令，執行相應的操作
+            # 可以根據收到的指令，執行相應的操作
             # 在這個範例中，我們只是回應一個固定的訊息
             response = "Command executed successfully!"
             client_socket.send(response.encode())

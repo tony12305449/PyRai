@@ -12,7 +12,7 @@ def handle_client(client_socket):
         if command_to_clients:
             client_socket.send(command_to_clients.encode())
             response = client_socket.recv(1024).decode()
-            print("Response from Client:", response)
+            print("Response from Client:"+ response+"\n")
             # 清空指令，表示已經處理
             command_to_clients = ""
 
@@ -28,17 +28,17 @@ def start_server():
     Host_IP, targerIP = read_config_ip() #target IP not use
     host = Host_IP
     #host="192.168.206.136"
-    port = 12345
+    port = 12348
 
 
     server_socket.bind((host, port))
     server_socket.listen(100)
 
-    print("C&C Server is listening on {}:{}".format(host, port))
+    print("C&C Server is listening on {}:{}".format(host, port)+"\n")
 
     while True:
         client_socket, client_address = server_socket.accept()
-        print("Connection from: {}".format(client_address))
+        print("Connection from: {}".format(client_address)+"\n")
 
         client_handler = threading.Thread(target=handle_client, args=(client_socket,))
         client_handler.start()
@@ -49,7 +49,7 @@ def send_command_to_clients():
     global command_to_clients
     while True:
         # Server輸入指令
-        command = input("Enter something command to device ")
+        command = input("Enter something command to device :\n")
         if command == "exit":
             break
         else:
