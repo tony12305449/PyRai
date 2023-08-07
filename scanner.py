@@ -78,12 +78,12 @@ MAlist = [
 filename = 'ip_config.ini'
 with open(filename, 'r') as file:
     json_data = json.load(file)
-RelayIP = json_data['RelayIP']
+HostIP = json_data['RelayIP']
 targetIP = json_data['targetIP']
 
 
 # Relay
-__RELAY_H__ = RelayIP  #192.168.1.97
+__RELAY_H__ = HostIP  #192.168.1.97
 __RELAY_P__ = 31337
 __RELAY_PS_ = "||"
 
@@ -242,7 +242,7 @@ def is_ssh_open(ip):
 def generate_IP(index):
     return f"192.168.1.{index}"
 
-
+'''not use'''
 def getOS():
     return platform.system() + " " + platform.release() + " " + platform.version()
 
@@ -293,8 +293,8 @@ if __name__ == '__main__':
     Scanner(2)
 
 
-'''
+''' if you want to speed up 
 for x in range(0, __THREADS__):
-    thread = Thread(target = Scanner)
+    thread = Thread(target = Scanner( ))
     thread.start()
 '''

