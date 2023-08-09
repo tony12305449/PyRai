@@ -280,10 +280,10 @@ def Scanner(choose):
         for i in range(1, 255):
             is_telent_open(generate_IP(i))
     else:
-        print("Try to scan Telnet ---------------")
-        is_telent_open("192.168.1.121")
-        #print("Try to scan SSH ---------------")
-        #is_ssh_open("192.168.1.167")
+        #print("Try to scan Telnet ---------------")
+        #is_telent_open("192.168.1.121")
+        print("Try to scan SSH ---------------")
+        is_ssh_open("192.168.1.163")
 
 
 

