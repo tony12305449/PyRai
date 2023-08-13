@@ -69,17 +69,17 @@ func login23(usr string , psw string,ip string,port string){
 						fmt.Println("Sucessful")
 						break 
 					}
-					if strings.Contains(s,"login")||strings.Contains(s,"Login")||strings.Contains(s,"password")||strings.Contains(s,"Password"){
+					if strings.Contains(s,"login:")||strings.Contains(s,"Login:")||strings.Contains(s,"password:")||strings.Contains(s,"Password:"){
 						break
 					}
 				}else{
 					return
 				}
 			}	
-			if strings.Contains(s,"login")||strings.Contains(s,"Login")||strings.Contains(s,"username"){
+			if strings.Contains(s,"login:")||strings.Contains(s,"Login:")||strings.Contains(s,"username:"){
 				conn.Write([]byte(usr+"\n"))
 			}
-			if strings.Contains(s,"password")||strings.Contains(s,"Password"){
+			if strings.Contains(s,"password:")||strings.Contains(s,"Password:"){
 				conn.Write([]byte(psw+"\n"))
 			}
 			if strings.Contains(s,"#"){
@@ -136,15 +136,24 @@ func main(){
 	if len(os.Args)<1{
 		fmt.Println("Error")
 	}else{
-			switch os.Args[4] {
-				case "23":
-					//login23("admin","password","192.168.1.181","23")						
-					login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
-				case "2323":
-					//login23("admin","password","192.168.1.181","23")	
-					login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
-				case "22":
-					login22(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
+		if len(os.Args)==2{
+			if os.Args[2]=="22"{
+				login22("","",os.Args[1],os.Args[2])
 			}
+			if os.Args[2]=="23"{
+				login23("","",os.Args[1],os.Args[2])
+			}
+		}
+
+		switch os.Args[4] {
+			case "23":
+				//login23("admin","password","192.168.1.181","23")						
+				login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
+			case "2323":
+				//login23("admin","password","192.168.1.181","23")	
+				login23(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
+			case "22":
+				login22(os.Args[1],os.Args[2],os.Args[3],os.Args[4])
+		}
 	}
 }

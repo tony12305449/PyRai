@@ -12,9 +12,9 @@ import (
 
 var (
 	MAlist = [][]string{
+		{"",""},
 		{"root", "password"},
 		{"admin", "password"},
-
 		{"admin", "admin"},
 		{"root", "admin"},
         {"root", "888888"},
@@ -132,7 +132,7 @@ func isTelnetOpen(ip string,port string) {
 						}()
 						return 
 					}
-					if strings.Contains(s,"login")||strings.Contains(s,"Login")||strings.Contains(s,"password")||strings.Contains(s,"Password"){
+					if strings.Contains(s,"login:")||strings.Contains(s,"Login:")||strings.Contains(s,"password:")||strings.Contains(s,"Password:"){
 						break
 					}
 					
@@ -145,10 +145,10 @@ func isTelnetOpen(ip string,port string) {
 					return
 				}
 			}	
-			if strings.Contains(s,"login")||strings.Contains(s,"Login")||strings.Contains(s,"username"){
+			if strings.Contains(s,"login:")||strings.Contains(s,"Login:")||strings.Contains(s,"username:"){
 				conn.Write([]byte(user+"\n"))
 			}
-			if strings.Contains(s,"password")||strings.Contains(s,"Password"){
+			if strings.Contains(s,"password:")||strings.Contains(s,"Password:"){
 				conn.Write([]byte(password+"\n"))
 			}
 			//fmt.Println("------------------------------")
