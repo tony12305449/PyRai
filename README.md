@@ -1,73 +1,21 @@
 # Pyrai - Mirai python variant
 
-## __The current modification is for educational and research use.__
+這項Mirai工作是基於研究與學習用途，依照簡易功能所實現出來的
 
-This is a working variant of the Mirai IOT botnet, this is fully written in Python3. In this paper I'm going to show you how to configure each script in order to setup your PyRai.
+其中有幾項功能是需要設定的，在後續也會說明
 
-## Requirements
-It needs actually something like 2-3 libs like telnet lib but to be sure install the requirements.txt
+在開始操作之前，首先需要先進行設定ip_config.ini程式檔，將RelayIP設定為本機端IP位置，Target端僅用來測試單一目標裝置用，如無則免設定
 
-## Relay setup
+首先，我們實現的Mirai主要提供```Scanner.py```、```Loader.py```、```CNC.py``` 、```bin_server.py``` 和 ```relay.py```
 
-First of all you need to setup up the relay, this server will collect all the username and password from the remote scanners each time they successfully bruteforce a device. So in order to do this open the file __relay.py__ and modify the variables:
-- ```__PORT__ ```: The relay port ( feel free to use the default one )
-- ```__MAXCONN__``` : This variable will accept a maximum of 1k connections ( by default ) at the same time to receive the credentials.
+而其他資料夾像是```ELF_file```、```device_side```則是感染裝置的原始碼以及檔案
 
-Now that the script is ready just run it:
+```Scanner.py```內部中，主要提供生成IP以及掃瞄是否有開啟22、23 port，並且會用內建的帳號密碼清單組進行brute force，其中```main```的位置呼叫Scanner函數調用可以設定的args有兩個，Scanner(choose,ip)
+如果choose==1時則會進行全域掃描將192.168.0.1~192.168.254.255都進行掃描並record
+如果將choose設定為2時則需要帶入ip位置針對該ip位置進行掃描
 
-``` python relay.py ```
+```Loader.py```，可以將掃描器中獲得到的IP以及帳號密碼進行帶入，帶入後會依照SSH或是Telnet進行登入，並下達指令進行感染下載完成移植動作。
+在```doSSHLogin(ip, port, user, pass_)```、```doTelnetLogin(ip, port, user, pass_)```兩個函數中都是帶入ip、port、username、password進行存取，如果port為22請使用doSSHLogin，若port 23則使用doTelnetLogin
 
-and it should display something like the following:
-```
-[18:09:50] [INFO] Starting relay on port: 31337
-[18:09:50] [WARNING] Configuration set to allow 1000 connections..
-[18:09:50] [INFO] Relay is online!
-```
 
-_P.S._ I suggest you to setup a VPN for the relay in order to hide the real IP, just in case.
 
-## Scanner deployment
-
-Cool! Now that you have the relay running edit the file __scanner.py__ and modify the following vars:
-```__RELAY_H__``` : The ip of the relay.
-```__RELAY_P__``` : The port of the relay.
-
-Of course they have to match the variables of the __relay.py__ script.
-
-Now you can run the scanner :
-```
-python scanner.py
-```
-
-starting from your personal machine. Then it will start scanning the entire IPV4 and
-if it can find some vulnerables machines it will report the credentials to the relay and it will write them down to :
-__/dump/csdb.txt__ .
-
-## Loader
-
-Awsome! Now you got your own MIRAI running and trying to spread. Once your credentials will start to grow you can run the loader file to enlarge the botnet. 
-
-Before run the loader be sure to have the __scanner.py__ file compiled for linux systems, you can find guides online (google is your friend). Otherwise you can run just the .py file but modify the line number __52__ of the loader file to run the .py file instead of the binary.
-
-Before talking about the loader, let's analize how the infection process works.
-- It will login into the compromised device using the username and password stored.
-- If it can login it will move inside a common directory (var, usr, ...).
-- It will download the binary and then it will delete the binary.
-
-So the loader will run a webserver to serve the binary file.
-
-Let's configure it !
-``` __bin__ ``` : the direct link of the binary, be sure that is public accessible.
-``` __webp_ ``` : the port of your webserver ( don't even remember if it was used or not ...).
-
-Nice ! So now you can start spreading your botnet and when the loader will infect a new device it will print :
-```
-[loader] Broken.
-```
-
-And you'll have a new bot.
-
-## Conclusion and stuff
-
-The scanner file (the trojan) is not weaponized so when you infect a bot you don't have any backconnection or backdoor functions, but you can write them by yourself... because it easy to write a simple reverse shell or a simple ddos botnet. 
-Remember to use this tool only for study purposes only, I created it to replicate the working of Mirai and this is also because I didn't weaponized that. ( Just saying before this shit becomes public )

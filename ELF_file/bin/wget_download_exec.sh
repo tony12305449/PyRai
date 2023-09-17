@@ -1,7 +1,7 @@
 #!/bin/sh
 
 arch=$(uname -m | awk '{print tolower($0)}')
-ip="192.168.50.145:31338"
+ip="192.168.6.97:31338"
 
 if echo "$arch" | grep -qiE 'x86_64|amd64'; then
     wget "http://$ip/amd64_scanner" -O scanner

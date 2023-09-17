@@ -266,33 +266,34 @@ def validateC2():
             time.sleep(__C2DELAY__)
 
 
-def Scanner(choose):
+def Scanner(choose,ip=''):
     if choose == 1:
-        '''
-        for i in range(1, 255):
-            ip=generate_IP(i)
-            print(ip)
-            if is_ssh_open(ip):
-                print("[!] Find!")
-            else:
-                pass
-            print("-"*10)
-        '''
-        for i in range(1, 255):
-            is_telent_open(generate_IP(i))
+        for i in range(0, 254):
+            for j in range(1, 255):
+                ip=generate_IP(i,j)
+                print(ip)
+                if is_ssh_open(ip):
+                    print("[!] Find!")
+                else:
+                    pass
+                print("-"*10)
+        for i in range(0, 254):
+            for j in range(1, 255):
+                ip=generate_IP(i,j)
+                is_telent_open(generate_IP(i))
     else:
-        #print("Try to scan Telnet ---------------")
-        #is_telent_open("192.168.1.121")
+        print("Try to scan Telnet ---------------")
+        is_telent_open(ip)
         print("Try to scan SSH ---------------")
-        is_ssh_open("192.168.1.163")
+        is_ssh_open(ip)
 
 
 
 if __name__ == '__main__':
     print("[Scanner] Scanner process started ..")
     #validateC2() # Test to connect remote DB
-    #Scanner(2)
-    is_telent_open("192.168.0.1")
+    #Scanner(2,"192.168.0.1")
+    #is_telent_open("192.168.0.1")
 
 
 ''' if you want to speed up 
