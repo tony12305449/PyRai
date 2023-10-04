@@ -292,7 +292,7 @@ def Scanner(choose,ip=''):
 if __name__ == '__main__':
     print("[Scanner] Scanner process started ..")
     #validateC2() # Test to connect remote DB
-    #Scanner(2,"192.168.0.1")
+    Scanner(2,"192.168.6.163")
     #is_telent_open("192.168.0.1")
 
 

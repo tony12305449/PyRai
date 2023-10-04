@@ -144,7 +144,6 @@ func main(){
 				login23("","",os.Args[1],os.Args[2])
 			}
 		}
-
 		switch os.Args[4] {
 			case "23":
 				//login23("admin","password","192.168.1.181","23")						
