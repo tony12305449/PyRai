@@ -125,7 +125,7 @@ def ForceDB(fname):
 if __name__ == '__main__':
     #Host_IP, targerIP = read_config_ip()
     #ForceDB(sys.argv[2])
-    doTelnetLogin("192.168.6.121", "23", "root", "password")
+    #doTelnetLogin("192.168.6.121", "23", "root", "password")
     #doTelnetLogin("192.168.0.1","23","","")
-    #doSSHLogin("192.168.1.163","22","admin","password")
+    doSSHLogin("192.168.6.163","22","admin","password")
     pass

