@@ -1,4 +1,4 @@
-# Pyrai - Mirai python variant
+# Mirai python variant
 
 這項Mirai工作是基於研究與學習用途，依照Mirai功能所實現出來的，該程式碼不具有破壞裝置性。
 
