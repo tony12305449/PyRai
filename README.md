@@ -404,7 +404,7 @@ ddos http://192.168.6.97/
 
   鑒於我們分析裝置韌體，發現該系統中存在有telnet的檔案於系統中，並且在/bin/login.sh中可以直接繞過權限，因此在command處使用```'/usr/sbin/telnetd -l /bin/login.sh'```，令Telnet鏈結到login.sh藉此來達成無須帳號密碼的方式啟動Telnet。
 
-  執行結果如下圖，在觸發前利用nmap查詢裝置port狀態，並且執行程式後成功觸發telnet功能，並且登入telnet無須帳號密碼即可存取
+  執行結果如下圖，在觸發前利用nmap查詢裝置port狀態，並且執行程式後手動按下裝置上的led按鈕，成功觸發telnet功能，並且登入telnet無須帳號密碼即可存取
 
   ![](../image/Mirai_test/telnet.jpg)
 
@@ -417,3 +417,5 @@ ddos http://192.168.6.97/
   ![](../image/Mirai_test/infection2.jpg)
 
   可以發現檔案皆已存在於裝置系統中。
+
+  如果要使用ddns script則找到```RCE_exploit.py```註解的method 1 取消，並且將method 2註解起來，藉此就可以寫入第一種觸發方式。
