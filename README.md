@@ -251,7 +251,7 @@ python3 scanner.py
 ```
 如下圖
 
-![](../image/Mirai_test/scanner.jpg)
+![](./image/Mirai_test/scanner.jpg)
 
 可以看到Scanner針對該IP位置搜尋，並且成功在SSH中暴力解出帳號為admin密碼為password，並且將該資訊傳遞給relay接收新增
 
@@ -277,7 +277,7 @@ python3 loader.py
 
 如下結果，右邊可以看到被感染後，裝置正向bin_server索取檔案下載，並且可以到裝置中看到被感染後結果。
 
-![](../image/Mirai_test/binfile.gif)
+![](./image/Mirai_test/binfile.gif)
 
 在上述有提到，如果```wget_download_exec.sh```與```curl_download_exec.sh```下方程式碼移除註解則會自動再接續執行scanner以及執行CNC功能。
 
@@ -309,11 +309,11 @@ ddos http://192.168.6.97/
 
 操作結果如下圖
 
-![](../image/Mirai_test/CNC.gif)
+![](./image/Mirai_test/CNC.gif)
 
 再回到系統上使用指令```htop```即可查看當前資源使用率
 
-![](../image/Mirai_test/ddos.jpg)
+![](./image/Mirai_test/ddos.jpg)
 
 可以看到在未啟動任何服務的狀態時，資源被占用近30~40%
 
@@ -332,7 +332,7 @@ ddos http://192.168.6.97/
 ./loader admin password 192.168.6.2 23
 ```
 
-![](../image/Mirai_test/infection.gif)
+![](./image/Mirai_test/infection.gif)
 
 最後回到另一式裝置中即可看到裝置已被感染且移植相關執行檔。
 
@@ -367,11 +367,11 @@ ddos http://192.168.6.97/
     
     執行時，同樣需要啟動bin_server.py服務，避免無法找到感染執行檔案
 
-    ![](../image/Mirai_test/CVE-2021-4045.jpg)
+    ![](./image/Mirai_test/CVE-2021-4045.jpg)
     
     接著再利用CVE-2021-4045.py程式碼得到interactive使用```ls```指令查看是否存在
 
-    ![](../image/Mirai_test/CVE-2021-4045-interactive.jpg)
+    ![](./image/Mirai_test/CVE-2021-4045-interactive.jpg)
 
 - CVE-2022-30075
 
@@ -406,15 +406,15 @@ ddos http://192.168.6.97/
 
   執行結果如下圖，在觸發前利用nmap查詢裝置port狀態，並且執行程式後手動按下裝置上的led按鈕，成功觸發telnet功能，並且登入telnet無須帳號密碼即可存取
 
-  ![](../image/Mirai_test/telnet.jpg)
+  ![](./image/Mirai_test/telnet.jpg)
 
   接著，由於觸發了telnet服務，可以直接接續利用loader.py功能令使裝置被感染
 
-  ![](../image/Mirai_test/loader_RCE.jpg)
+  ![](./image/Mirai_test/loader_RCE.jpg)
 
   最後，再次使用Telnet登入裝置後查看感染狀態
 
-  ![](../image/Mirai_test/infection2.jpg)
+  ![](./image/Mirai_test/infection2.jpg)
 
   可以發現檔案皆已存在於裝置系統中。
 
