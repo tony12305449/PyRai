@@ -11,7 +11,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 var (
-	__RELAY_H__   = "192.168.1.97"
+	__RELAY_H__   = "192.168.6.97"
 	__RELAY_P__   = 31338
 	__RELAY_PS_   = "||"
 	__TIMEOUT__   = 2 * time.Second

