@@ -1,1 +1,5 @@
 Here will put some mirai kernel bin.
+
+資料夾中是提供要給裝置感染的檔案，包括可執行的shell腳本以及Mirai的程式碼
+
+此外，backup資料夾中是用來備份提供檔案所建的資料夾，預設僅提供curl_download_exec.sh與wget_download_exec.sh腳本

@@ -335,3 +335,85 @@ ddos http://192.168.6.97/
 ![](../image/Mirai_test/infection.gif)
 
 最後回到另一式裝置中即可看到裝置已被感染且移植相關執行檔。
+
+## RCE exploit
+
+本研究中同樣利用RCE結合進行感染，在此採用兩個RCE漏洞利用，程式碼分別為RCE_exploit.py、RCE_exploit2.py。
+
+- CVE-2021-4045
+  
+  我們利用該漏洞實現出```RCE_exploit2.py```。
+  
+  在這項漏洞，由於在http的payload參數中並未過濾特殊字元，以至於攻擊者可以先進行監聽，並且在參數中夾帶reverse shell，使其觸發remote shell。
+
+  由於我們可以獲得remote shell，因此我們直接在獲得interactive階段，直接加入loader中的功能，使其在觸發漏洞時直接進行感染動作。
+
+  程式中，我們使用兩個執行緒的方式，首先在第一個執行緒中會先調用nc的方式進行監聽，等待連接狀態，接著會去執行令一個執行緒並發送request payload，藉此觸發裝置的漏洞，當裝置接收到與解析後會主動與第一個執行緒進行連接，當連接成功後會進行loader動作感染，逐一下指令將病毒移植到裝置中。
+
+  **when using**
+    
+    需要注意程式碼的```line 16 ~ 18```，需要設定攻擊者自身的IP位置以及目標裝置的IP位置，
+    ```
+    attacker = "192.168.50.145"   # setting your computer's IP address
+    port_rev = 9999
+    victim = "192.168.50.118"    # setting Device IP address
+    ```
+    
+    輸入完成後直接執行
+
+    ```
+    python3 RCE_exploit2.py
+    ```
+    
+    執行時，同樣需要啟動bin_server.py服務，避免無法找到感染執行檔案
+
+    ![](../image/Mirai_test/CVE-2021-4045.jpg)
+    
+    接著再利用CVE-2021-4045.py程式碼得到interactive使用```ls```指令查看是否存在
+
+    ![](../image/Mirai_test/CVE-2021-4045-interactive.jpg)
+
+- CVE-2022-30075
+
+  我們利用該漏洞實現出```RCE_exploit.py```。
+
+  在此項漏洞中指出，透過WEB介面中匯入備份檔案因為驗證不當導致一些指令可被執行。
+  
+  在研究過程中我們發現，考慮到WEB的備份介面，攻擊者需要先利用已知的帳號密碼進行加密演算法或是透過暴力破解將每組帳號密碼進行加密嘗試登入，在成功登入後，可以透過請求的方式將備份檔案下載並且透過解密與解壓縮的方式將備份資訊拆解，其中，拆分過程可以獲得```md5_sum```、```ori-backup-ap-config.xml```、```ori-backup-certificate.xml```、```ori-backup-router-config.xml```、```ori-backup-user-config.xml```這些檔案，其中在```ori-backup-user-config.xml```中記載許多敏感資訊，包括帳號密碼以及裝置資訊設定檔案，由於備份資訊是裝置透過xml解析對應標籤並還原系統狀態，該漏洞觸發的位置位於xml中的兩處，其中一處是在DDNS設定上，通常位於裝置系統路徑的/etc/config/ddns，在[OpenWrt的官網](https://openwrt.org/docs/guide-user/services/ddns/client#detecting_wan_ip_with_scrip)中指出，DDNS提供options設定，可以允許使用者自定義service provider，在備份檔案中也能夠找到這樣的DDNS設定資訊，可以透過修改options參數，將ip_source與ip_script修改為特別指定的script，當裝置主動啟用ddns服務並且無法查詢相關ddns domain時會自動觸發該script藉此來達成漏洞觸發。另一處則是位於裝置的實體按鈕中，如下片段xml內容
+  
+  ```
+  <button name="led_switch">
+  <action>pressed</action>
+  <button>ledswitch</button>
+  <handler>/lib/led_switch</handler>
+  </button>
+  ```
+  可以發現到，該按鈕的設定也被寫入於備份檔案中，並且該處發動作會呼叫系統中的/lib/led_switch檔案，使裝置的按鈕進行關閉，攻擊者也同樣可以修改handler的參數，當使用者無意按下實體led按鈕時則成功觸發該漏洞。
+
+  **when using**
+
+  在當前程式碼中兩種方式都有實現出來，但由於考慮到裝置不能保證何時會觸發ddns的script，因此預設是使用led_switch的方式觸發
+
+  使用方式如下
+
+  ```
+  python3 RCE_exploit.py -t <IP> <yourpassword> -c '<command>'
+  ```
+  
+  在此提供了在已知帳號密碼的狀況所進行攻擊的情況，攻擊者將IP、密碼與指令帶入執行參數中執行。
+
+  鑒於我們分析裝置韌體，發現該系統中存在有telnet的檔案於系統中，並且在/bin/login.sh中可以直接繞過權限，因此在command處使用```'/usr/sbin/telnetd -l /bin/login.sh'```，令Telnet鏈結到login.sh藉此來達成無須帳號密碼的方式啟動Telnet。
+
+  執行結果如下圖，在觸發前利用nmap查詢裝置port狀態，並且執行程式後成功觸發telnet功能，並且登入telnet無須帳號密碼即可存取
+
+  ![](../image/Mirai_test/telnet.jpg)
+
+  接著，由於觸發了telnet服務，可以直接接續利用loader.py功能令使裝置被感染
+
+  ![](../image/Mirai_test/loader_RCE.jpg)
+
+  最後，再次使用Telnet登入裝置後查看感染狀態
+
+  ![](../image/Mirai_test/infection2.jpg)
+
+  可以發現檔案皆已存在於裝置系統中。
